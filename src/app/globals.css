@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Theme - Clean & Professional */
+    --background: 0 0 100%;           /* Pure white */
+    --foreground: 222.2 84% 4.9%;     /* Dark gray text */
+
+    --card: 0 0 100%;                 /* White cards */
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0 100%;              /* White popover */
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 221.2 83.2% 53.3%;     /* Blue #3B82F6 */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;          /* Light gray */
+    --secondary-foreground: 222.2 84% 4.9%;
+
+    --accent: 210 40% 94%;            /* Very light gray */
+    --accent-foreground: 222.2 84% 4.9%;
+
+    --muted: 210 40% 96%;             /* Light muted */
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --destructive: 0 84.2% 60.2%;     /* Red */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;     /* Light border */
+    --input: 214.3 31.8% 91.4%;      /* Input border */
+    --ring: 221.2 83.2% 53.3%;       /* Focus ring */
+
+    --success: 142.1 76.2% 36.3%;    /* Green */
+    --success-foreground: 210 40% 98%;
+
+    --warning: 32.6 94.6% 43.7%;     /* Orange */
+    --warning-foreground: 210 40% 98%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Theme - Clean & Professional */
+    --background: 222.2 84% 4.9%;     /* Dark background */
+    --foreground: 210 40% 98%;        /* Light text */
+
+    --card: 222.2 84% 4.9%;          /* Dark card */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;       /* Dark popover */
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;    /* Lighter blue for dark */
+    --primary-foreground: 222.2 84% 4.9%;
+
+    --secondary: 217.2 32.6% 17.5%;  /* Dark gray */
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 217.2 32.6% 17.5%;     /* Dark accent */
+    --accent-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;      /* Dark muted */
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --destructive: 0 62.8% 30.6%;    /* Dark red */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;     /* Dark border */
+    --input: 217.2 32.6% 17.5%;      /* Dark input */
+    --ring: 217.2 91.2% 59.8%;       /* Focus ring */
+
+    --success: 142.1 70.6% 45.3%;    /* Dark green */
+    --success-foreground: 210 40% 98%;
+
+    --warning: 32.6 94.6% 43.7%;     /* Orange */
+    --warning-foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-noto-sans), sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Smooth transitions for theme changes */
+  * {
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  }
+}
