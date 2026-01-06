@@ -238,14 +238,23 @@ export type Exercise =
 // ============================================================================
 
 export interface GrammarProgress {
-  overview: {
+  // Support both nested and flat structures
+  overview?: {
     totalLessonsCompleted: number;
     totalExercisesPassed: number;
     totalTimeSpent: number;
     averageExerciseScore: number;
   };
-  topicMasteries: TopicMastery[];
-  recentActivity: ActivityItem[];
+  // Flat structure (direct properties)
+  totalLessonsCompleted?: number;
+  totalExercisesPassed?: number;
+  totalTimeSpent?: number;
+  overallAverageScore?: number;
+  averageExerciseScore?: number;
+  // Topic mastery (support both property names)
+  topicMasteries?: TopicMastery[];
+  topicMastery?: TopicMastery[];
+  recentActivity?: ActivityItem[];
 }
 
 export interface TopicMastery {

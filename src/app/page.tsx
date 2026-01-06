@@ -8,6 +8,13 @@ import { LiquidButton } from "@/components/ui/liquid-button";
 import { SimpleThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/context/AuthContext";
 import { 
+  structuredData, 
+  websiteStructuredData, 
+  courseStructuredData, 
+  faqStructuredData,
+  appStructuredData 
+} from "@/config/seo-config";
+import { 
   BookOpen, 
   Trophy, 
   ArrowRight, 
@@ -73,18 +80,23 @@ const FeatureCard = ({ icon: Icon, title, desc, gradient }: any) => (
       visible: { y: 0, opacity: 1 }
     }}
     whileHover={{ scale: 1.05, y: -10 }}
-    className="group relative p-8 rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300"
+    className="group relative p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/30 transition-all duration-300 overflow-hidden"
   >
-    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-2xl`}>
+    {/* Gradient background on hover */}
+    <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+    
+    {/* Shine effect */}
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+    
+    <div className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-2xl`}>
       <Icon className="h-8 w-8 text-white" />
     </div>
-    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 group-hover:bg-clip-text transition-all">
+    <h3 className="relative text-2xl font-bold text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 group-hover:bg-clip-text transition-all">
       {title}
     </h3>
-    <p className="text-gray-300 leading-relaxed group-hover:text-white transition-colors">
+    <p className="relative text-gray-300 leading-relaxed group-hover:text-white transition-colors">
       {desc}
     </p>
-    <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
   </motion.div>
 );
 
@@ -135,10 +147,41 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden relative">
-      {/* Background Texture Effect */}
-      <div className="fixed inset-0 pointer-events-none opacity-20" 
-           style={{ backgroundImage: 'radial-gradient(hsl(var(--primary)) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-foreground overflow-hidden relative">
+      {/* SEO Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteStructuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseStructuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appStructuredData) }}
+      />
+      
+      {/* Enhanced Background Grid */}
+      <div className="fixed inset-0 pointer-events-none opacity-30" 
+           style={{ 
+             backgroundImage: 'linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)', 
+             backgroundSize: '40px 40px' 
+           }}>
+      </div>
+      
+      {/* Animated gradient mesh */}
+      <div className="fixed inset-0 opacity-40">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-transparent to-blue-600/20 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-pink-600/20 via-transparent to-cyan-600/20 animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
       
       {/* React Bits Particles Background */}
@@ -179,79 +222,89 @@ export default function LandingPage() {
         ))}
       </div>
 
-      {/* Navbar */}
+      {/* Enhanced Navbar with Glassmorphism */}
       <motion.nav 
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 w-full px-6 py-6 flex items-center justify-between max-w-7xl mx-auto"
+        className="relative z-50 w-full px-6 py-4 backdrop-blur-xl bg-white/5 border-b border-white/10 sticky top-0"
       >
-        <motion.div 
-          className="flex items-center gap-3"
-          whileHover={{ scale: 1.05 }}
-          style={{ x: mousePosition.x * 0.5, y: mousePosition.y * 0.5 }}
-        >
-          <div className="w-12 h-12 flex items-center justify-center rounded-2xl shadow-lg overflow-hidden">
-            <motion.img
-              src="/logo/klartext logo.png"
-              alt="KlarText Logo"
-              className="w-full h-full object-contain"
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            />
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <motion.div 
+            className="flex items-center gap-3"
+            whileHover={{ scale: 1.05 }}
+            style={{ x: mousePosition.x * 0.5, y: mousePosition.y * 0.5 }}
+          >
+            <motion.div 
+              className="w-12 h-12 flex items-center justify-center rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 via-blue-500 to-cyan-500 shadow-lg"
+              animate={{ 
+                boxShadow: [
+                  "0 0 20px rgba(168, 85, 247, 0.4)",
+                  "0 0 30px rgba(59, 130, 246, 0.6)",
+                  "0 0 20px rgba(168, 85, 247, 0.4)",
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <img
+                src="/logo/main logo.png"
+                alt="KlarText Logo"
+                className="w-full h-full object-contain p-1.5 mix-blend-lighten"
+              />
+            </motion.div>
+            <span className="text-2xl font-serif font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              KlarText
+            </span>
+          </motion.div>
+          
+          <div className="flex items-center gap-4">
+            <SimpleThemeToggle />
+            {user ? (
+              <>
+                <Link href="/dashboard">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <LiquidButton variant="primary" className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 shadow-lg shadow-purple-500/30">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </LiquidButton>
+                  </motion.div>
+                </Link>
+                <Link href="/lessons">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <LiquidButton variant="outline" className="border-white/20 hover:bg-white/10 backdrop-blur-sm">
+                      All Lessons
+                    </LiquidButton>
+                  </motion.div>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <LiquidButton 
+                      variant="outline" 
+                      className="border-white/20 hover:bg-white/10 backdrop-blur-sm"
+                    >
+                      Log in
+                    </LiquidButton>
+                  </motion.div>
+                </Link>
+                <Link href="/register">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <LiquidButton variant="success" className="bg-gradient-to-r from-emerald-600 to-teal-600 border-0 shadow-lg shadow-emerald-500/30">
+                      <Zap className="mr-2 h-4 w-4" />
+                      Get Started
+                    </LiquidButton>
+                  </motion.div>
+                </Link>
+              </>
+            )}
           </div>
-          <span className="text-3xl font-serif font-bold text-foreground">
-            KlarText
-          </span>
-        </motion.div>
-        
-        <div className="flex items-center gap-4">
-          <SimpleThemeToggle />
-          {user ? (
-            // Show for logged in users
-            <>
-              <Link href="/dashboard">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <LiquidButton variant="primary" className="shadow-lg">
-                    Dashboard
-                  </LiquidButton>
-                </motion.div>
-              </Link>
-              <Link href="/lessons">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <LiquidButton variant="outline" className="shadow-lg">
-                    All Lessons
-                  </LiquidButton>
-                </motion.div>
-              </Link>
-            </>
-          ) : (
-            // Show for non-logged in users
-            <>
-              <Link href="/login">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <LiquidButton 
-                    variant="outline" 
-                    className="text-foreground/80"
-                  >
-                    Log in
-                  </LiquidButton>
-                </motion.div>
-              </Link>
-              <Link href="/register">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <LiquidButton variant="success" className="shadow-lg">
-                    Get Started
-                  </LiquidButton>
-                </motion.div>
-              </Link>
-            </>
-          )}
         </div>
       </motion.nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 text-center mt-10 md:mt-20 max-w-6xl mx-auto">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 text-center pt-20 pb-32 max-w-7xl mx-auto">
         <motion.div
           style={{ y: y1, x: mousePosition.x }}
         >
@@ -261,14 +314,27 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="mb-8"
           >
-            <span className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-200 text-sm font-bold tracking-wide uppercase border border-purple-500/30 backdrop-blur-sm inline-flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              The Future of Language Learning
-              <Sparkles className="w-4 h-4" />
-            </span>
+            <motion.span 
+              className="group px-6 py-3 rounded-full bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-cyan-500/20 text-transparent bg-clip-text text-sm font-bold tracking-wide uppercase border border-white/20 backdrop-blur-xl inline-flex items-center gap-2 shadow-lg shadow-purple-500/20"
+              whileHover={{ scale: 1.05 }}
+              animate={{ 
+                boxShadow: [
+                  "0 0 20px rgba(168, 85, 247, 0.2)",
+                  "0 0 30px rgba(59, 130, 246, 0.3)",
+                  "0 0 20px rgba(168, 85, 247, 0.2)",
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                The Future of Language Learning
+              </span>
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+            </motion.span>
           </motion.div>
 
-          <div className="text-6xl md:text-8xl font-serif font-bold leading-tight mb-8">
+          <div className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold leading-tight mb-8">
             <SplitText
               text="Master German through"
               tag="h1"
@@ -295,7 +361,7 @@ export default function LandingPage() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed"
           >
             Revolutionary language learning powered by adaptive AI. 
             <span className="text-yellow-400 font-semibold"> Read immersive stories</span>, 
@@ -307,38 +373,42 @@ export default function LandingPage() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
+            className="flex flex-col sm:flex-row gap-6 justify-center mb-20"
           >
             <Link href="/register">
               <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
+                whileHover={{ scale: 1.05, y: -4 }}
                 whileTap={{ scale: 0.98 }}
-                className="group"
+                className="group relative"
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
                 <LiquidButton 
                   variant="primary"
                   size="lg" 
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white px-10 py-6 text-xl rounded-2xl shadow-2xl shadow-yellow-500/25 hover:shadow-yellow-400/40"
+                  className="relative bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 hover:from-yellow-400 hover:via-orange-400 hover:to-yellow-400 text-white font-bold px-10 py-6 text-lg rounded-2xl shadow-2xl border-0 overflow-hidden"
                 >
-                  <Zap className="mr-3 h-6 w-6" />
-                  Start Learning Free
-                  <ArrowRight className="ml-3 h-6 w-6" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  <span className="relative flex items-center">
+                    <Zap className="mr-2 h-5 w-5" />
+                    Start Learning Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </span>
                 </LiquidButton>
               </motion.div>
             </Link>
             
-            <Link href="/dashboard">
+            <Link href="/lessons">
               <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
+                whileHover={{ scale: 1.05, y: -4 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <LiquidButton 
                   variant="outline" 
                   size="lg" 
-                  className="border-2 border-purple-500/50 text-white hover:bg-purple-500/20 px-10 py-6 text-xl rounded-2xl backdrop-blur-sm"
+                  className="border-2 border-purple-500/50 text-white hover:bg-purple-500/20 px-10 py-6 text-lg rounded-2xl backdrop-blur-xl bg-white/5"
                 >
-                  <Target className="mr-3 h-6 w-6" />
-                  View Dashboard
+                  <Target className="mr-2 h-5 w-5" />
+                  Explore Lessons
                 </LiquidButton>
               </motion.div>
             </Link>
@@ -394,19 +464,21 @@ export default function LandingPage() {
         </motion.div>
       </main>
 
-      {/* Footer */}
+      {/* Enhanced Footer */}
       <motion.footer 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 py-12 text-center text-gray-400 border-t border-white/10 backdrop-blur-sm"
+        className="relative z-10 py-12 text-center text-gray-400 border-t border-white/10 backdrop-blur-xl bg-white/5"
       >
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Star className="w-5 h-5 text-yellow-400" />
-          <p className="text-lg">© 2024 KlarText. Revolutionizing Language Learning.</p>
-          <Star className="w-5 h-5 text-yellow-400" />
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Star className="w-5 h-5 text-yellow-400 animate-pulse" />
+          <p className="text-lg font-medium bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            © 2024 KlarText. Revolutionizing Language Learning.
+          </p>
+          <Star className="w-5 h-5 text-yellow-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
         </div>
-        <p className="text-sm text-gray-500">Built with AI ❤️ for German Learners Worldwide</p>
+        <p className="text-sm text-gray-500">Built for German Learners Worldwide</p>
       </motion.footer>
     </div>
   );

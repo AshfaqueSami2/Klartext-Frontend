@@ -10,7 +10,7 @@ import {
   Target,
   TrendingUp
 } from 'lucide-react';
-import { GrammarProgress } from '@/types/grammar.types';
+import { GrammarProgress, TopicMastery } from '@/types/grammar.types';
 import { cn } from '@/lib/utils';
 
 interface ProgressOverviewProps {
@@ -18,38 +18,49 @@ interface ProgressOverviewProps {
 }
 
 export function ProgressOverview({ progress }: ProgressOverviewProps) {
-  const { overview } = progress;
+  // Handle both nested and flat API response structures
+  const overview = progress.overview || {
+    totalLessonsCompleted: progress.totalLessonsCompleted || 0,
+    totalExercisesPassed: progress.totalExercisesPassed || 0,
+    totalTimeSpent: progress.totalTimeSpent || 0,
+    averageExerciseScore: progress.overallAverageScore || progress.averageExerciseScore || 0
+  };
+
+  // Debug log to verify data
+  console.log('ProgressOverview - overview data:', overview);
   
   const stats = [
     {
       label: 'Lessons Completed',
-      value: overview.totalLessonsCompleted,
+      value: overview.totalLessonsCompleted || 0,
       icon: BookOpen,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10'
     },
     {
       label: 'Exercises Passed',
-      value: overview.totalExercisesPassed,
+      value: overview.totalExercisesPassed || 0,
       icon: Trophy,
       color: 'text-emerald-500',
       bgColor: 'bg-emerald-500/10'
     },
     {
       label: 'Time Spent',
-      value: `${Math.round(overview.totalTimeSpent / 60)}m`,
+      value: `${Math.round((overview.totalTimeSpent || 0) / 60)}m`,
       icon: Clock,
       color: 'text-violet-500',
       bgColor: 'bg-violet-500/10'
     },
     {
       label: 'Avg. Score',
-      value: `${overview.averageExerciseScore}%`,
+      value: overview.averageExerciseScore ? `${Math.round(overview.averageExerciseScore)}%` : '0%',
       icon: Target,
       color: 'text-amber-500',
       bgColor: 'bg-amber-500/10'
     }
   ];
+
+  console.log('ProgressOverview - stats:', stats); // Debug: see computed stats
 
   return (
     <motion.div
@@ -81,7 +92,7 @@ export function ProgressOverview({ progress }: ProgressOverviewProps) {
 }
 
 interface MasteryCardProps {
-  mastery: GrammarProgress['topicMasteries'][0];
+  mastery: TopicMastery;
   index: number;
 }
 

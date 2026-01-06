@@ -128,9 +128,16 @@ export class TTSService {
       console.log('✨ Cleaned text:', cleanText.substring(0, 100) + '...');
     }
 
+    // Trim and validate text
+    cleanText = cleanText.trim();
+    if (!cleanText) {
+      throw new Error('No text provided for audio generation');
+    }
+
     // Check cache first
     const cacheKey = this.getCacheKey(cleanText, options);
     if (this.audioCache.has(cacheKey)) {
+      console.log('✅ Using cached audio for:', cleanText.substring(0, 30));
       return {
         success: true,
         audioUrl: this.audioCache.get(cacheKey)!,
@@ -139,24 +146,36 @@ export class TTSService {
     }
 
     try {
+      console.log('🎤 Generating audio for:', cleanText.substring(0, 50));
+      
       const response = await api.post<AudioResponse>('/tts/generate-text', {
         text: cleanText,
-        voiceName: options.voiceName,
+        voiceName: options.voiceName || 'de-DE-ConradNeural',
         language: options.language || 'de-DE',
         speed: options.speed || 1.0,
         pitch: options.pitch || 0
+      }, {
+        timeout: 10000 // 10 second timeout for word pronunciation
       });
 
-      if (response.data.success) {
+      if (response.data && response.data.success && response.data.audioUrl) {
+        console.log('✅ Audio generated successfully');
         // Cache the audio URL using cleaned text
         this.audioCache.set(cacheKey, response.data.audioUrl);
         return response.data;
       } else {
-        throw new Error(response.data.message || 'Failed to generate audio');
+        console.error('Invalid TTS response:', response.data);
+        throw new Error(response.data?.message || 'Invalid audio response from server');
       }
     } catch (error: any) {
-      console.error('Error generating text audio:', error);
-      throw new Error(error.response?.data?.message || 'Could not generate audio for text');
+      console.error('❌ Error generating text audio:', error);
+      
+      // Better error messages
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Could not generate audio. Server may be unavailable.';
+      
+      throw new Error(errorMessage);
     }
   }
 

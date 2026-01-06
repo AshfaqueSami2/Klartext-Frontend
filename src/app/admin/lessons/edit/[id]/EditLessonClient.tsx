@@ -6,12 +6,13 @@ import { useForm } from "react-hook-form";
 import dynamic from "next/dynamic";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, ArrowLeft } from "lucide-react";
+import { Loader2, Save, ArrowLeft, Lock } from "lucide-react";
 
 // Dynamic import for heavy TipTap editor
 const GermanTextEditor = dynamic(() => import("../../../createlesson/GermanTextEditor"), {
@@ -36,11 +37,13 @@ interface EditLessonPageProps {
 }
 
 export default function EditLessonPage({ lessonId }: EditLessonPageProps) {
+  const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [content, setContent] = useState("");
   const [lesson, setLesson] = useState<any>(null);
+  const [isOwner, setIsOwner] = useState(false);
   
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<LessonFormData>();
 
@@ -55,6 +58,17 @@ export default function EditLessonPage({ lessonId }: EditLessonPageProps) {
       const foundLesson = response.data.data.find((l: any) => l._id === lessonId);
       
       if (foundLesson) {
+        // Check if current user is the lesson owner
+        const adminId = typeof foundLesson.admin === 'string' ? foundLesson.admin : foundLesson.admin?._id;
+        const isUserOwner = user && adminId === user._id;
+        
+        if (!isUserOwner) {
+          toast.error("You can only edit lessons you created");
+          router.push("/admin/lessons");
+          return;
+        }
+        
+        setIsOwner(true);
         setLesson(foundLesson);
         setValue("title", foundLesson.title);
         setValue("difficulty", foundLesson.difficulty);
@@ -122,6 +136,26 @@ export default function EditLessonPage({ lessonId }: EditLessonPageProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Lesson not found</h2>
+          <Button onClick={() => router.push("/admin/lessons")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Lessons
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isOwner) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <Lock className="h-12 w-12 text-red-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-4">
+              You can only edit lessons that you created. This lesson belongs to another admin.
+            </p>
+          </div>
           <Button onClick={() => router.push("/admin/lessons")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Lessons

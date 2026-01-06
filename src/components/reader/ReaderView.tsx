@@ -6,6 +6,7 @@ import WordPopup from "./WordPopup";
 import { celebrateCompletion, fireConfetti } from "@/components/ui/confetti";
 import AudioPlayer from "@/components/ui/AudioPlayer";
 import VoiceSelector from "@/components/ui/VoiceSelector";
+import api from "@/lib/axios";
 
 interface ReaderViewProps {
   lessonId: string;
@@ -30,6 +31,7 @@ export default function ReaderView({
   const [selectedWord, setSelectedWord] = useState<{ text: string; x: number; y: number } | null>(null);
   const [processedContent, setProcessedContent] = useState<string>("");
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
 
   // Helper: Clean word (remove punctuation)
@@ -266,32 +268,22 @@ export default function ReaderView({
               
               // First time completion - hit backend
               try {
-                const token = localStorage.getItem('accessToken');
-                if (!token) {
-                  window.location.href = '/dashboard';
-                  return;
-                }
-                
-                // Use your existing backend endpoint
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/progress/complete`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                  },
-                  body: JSON.stringify({ lessonId })
+                // Use axios instance which already handles token authentication
+                const response = await api.post('/progress/complete', { 
+                  lessonId 
                 });
                 
-                if (response.ok) {
-                  const completionData = await response.json();
+                const completionData = response.data;
                   
                   // Check if user was promoted to next level
                   const wasPromoted = completionData.data?.levelPromoted || false;
                   const newLevel = completionData.data?.newLevel;
                   const oldLevel = completionData.data?.oldLevel;
-                  const promotionBonus = completionData.data?.promotionBonus;
+                  const promotionBonus = completionData.data?.promotionBonus || 0;
                   const awardedCoins = completionData.data?.awardedCoins || 10;
-                  const newBalance = completionData.data?.newBalance;
+                  const newBalance = completionData.data?.newBalance || 0;
+                  
+                  console.log('Lesson completion response:', completionData);
                   
                   // Show appropriate notification
                   if (typeof window !== 'undefined') {
@@ -316,7 +308,7 @@ export default function ReaderView({
                           <div>
                             <div class="font-bold text-lg">Level Up!</div>
                             <div class="text-sm opacity-90">Promoted from <strong>${oldLevel}</strong> to <strong>${newLevel}</strong>!</div>
-                            <div class="text-xs opacity-75 mt-1">+${awardedCoins} coins + ${promotionBonus} promotion bonus!</div>
+                            <div class="text-xs opacity-75 mt-1">+${awardedCoins} coins${promotionBonus > 0 ? ` + ${promotionBonus} promotion bonus` : ''}!</div>
                             <div class="text-xs opacity-75">Balance: ${newBalance} coins</div>
                           </div>
                         </div>
@@ -356,25 +348,46 @@ export default function ReaderView({
                       }));
                     }
                     
+                    // Mark lesson as completed to disable the button
+                    setIsLessonCompleted(true);
+                    
                     // Redirect after showing notification (longer delay for promotion)
                     const redirectDelay = wasPromoted ? 5000 : 2500;
                     setTimeout(() => {
                       window.location.href = '/dashboard';
                     }, redirectDelay);
                   }
-                } else {
-                  // Error - still redirect but show error
-                  console.error('Failed to complete lesson');
-                  window.location.href = '/dashboard';
-                }
               } catch (error) {
                 console.error('Error completing lesson:', error);
-                window.location.href = '/dashboard';
+                
+                // Show error notification
+                if (typeof window !== 'undefined') {
+                  const errorNotification = document.createElement('div');
+                  errorNotification.innerHTML = `
+                    <div class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-in slide-in-from-right duration-300">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <div>
+                        <div class="font-semibold">Failed to complete lesson</div>
+                        <div class="text-sm opacity-90">Please try again or contact support</div>
+                      </div>
+                    </div>
+                  `;
+                  document.body.appendChild(errorNotification);
+                  
+                  // Auto-remove error notification after 3 seconds
+                  setTimeout(() => {
+                    errorNotification.remove();
+                  }, 3000);
+                }
+                
+                setIsCompleting(false);
               }
             }}
-            disabled={isCompleting}
+            disabled={isCompleting || isLessonCompleted}
             className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-10 py-4 rounded-full flex items-center gap-3 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-green-400 ${
-              isCompleting ? 'opacity-75 cursor-not-allowed' : ''
+              isCompleting || isLessonCompleted ? 'opacity-75 cursor-not-allowed' : ''
             }`}
           >
             {isCompleting ? (

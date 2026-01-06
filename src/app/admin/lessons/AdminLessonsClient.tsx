@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface Lesson {
   content: string;
   slug: string;
   author: string;
+  admin: string | { _id: string }; // Admin who created the lesson
   isPublished: boolean;
   isDeleted: boolean;
   createdAt: string;
@@ -59,12 +61,21 @@ const getDifficultyColor = (difficulty: string) => {
 };
 
 export default function AdminLessonsClient() {
+  const { user } = useAuth();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState("all");
+  const [filterOwnership, setFilterOwnership] = useState<"all" | "mine">("all");
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; lesson: Lesson | null }>({ isOpen: false, lesson: null });
+
+  // Check if current user owns the lesson
+  const isLessonOwner = (lesson: Lesson): boolean => {
+    if (!user) return false;
+    const adminId = typeof lesson.admin === 'string' ? lesson.admin : lesson.admin?._id;
+    return adminId === user._id;
+  };
 
   // Fetch lessons on component mount
   useEffect(() => {
@@ -112,7 +123,8 @@ export default function AdminLessonsClient() {
     const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          stripHtmlTags(lesson.content).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDifficulty = filterDifficulty === "all" || lesson.difficulty === filterDifficulty;
-    return matchesSearch && matchesDifficulty && !lesson.isDeleted;
+    const matchesOwnership = filterOwnership === "all" || (filterOwnership === "mine" && isLessonOwner(lesson));
+    return matchesSearch && matchesDifficulty && matchesOwnership && !lesson.isDeleted;
   });
 
   return (
@@ -143,7 +155,7 @@ export default function AdminLessonsClient() {
       <div className="max-w-7xl mx-auto p-6">
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4">
               {/* Search */}
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -155,22 +167,37 @@ export default function AdminLessonsClient() {
                 />
               </div>
               
-              {/* Difficulty Filter */}
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <select
-                  value={filterDifficulty}
-                  onChange={(e) => setFilterDifficulty(e.target.value)}
-                  className="px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="all">All Levels</option>
-                  <option value="A1">A1 - Beginner</option>
-                  <option value="A2">A2 - Elementary</option>
-                  <option value="B1">B1 - Intermediate</option>
-                  <option value="B2">B2 - Upper Intermediate</option>
-                  <option value="C1">C1 - Advanced</option>
-                  <option value="C2">C2 - Proficiency</option>
-                </select>
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Ownership Filter */}
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <select
+                    value={filterOwnership}
+                    onChange={(e) => setFilterOwnership(e.target.value as "all" | "mine")}
+                    className="px-3 py-2 border rounded-md bg-background"
+                  >
+                    <option value="all">All Lessons</option>
+                    <option value="mine">My Lessons Only</option>
+                  </select>
+                </div>
+                
+                {/* Difficulty Filter */}
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-gray-500" />
+                  <select
+                    value={filterDifficulty}
+                    onChange={(e) => setFilterDifficulty(e.target.value)}
+                    className="px-3 py-2 border rounded-md bg-background"
+                  >
+                    <option value="all">All Levels</option>
+                    <option value="A1">A1 - Beginner</option>
+                    <option value="A2">A2 - Elementary</option>
+                    <option value="B1">B1 - Intermediate</option>
+                    <option value="B2">B2 - Upper Intermediate</option>
+                    <option value="C1">C1 - Advanced</option>
+                    <option value="C2">C2 - Proficiency</option>
+                  </select>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -185,6 +212,20 @@ export default function AdminLessonsClient() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Lessons</p>
                   <p className="text-2xl font-bold text-gray-900">{lessons.filter(l => !l.isDeleted).length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">My Lessons</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {lessons.filter(l => !l.isDeleted && isLessonOwner(l)).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -286,8 +327,13 @@ export default function AdminLessonsClient() {
                       <tr key={lesson._id} className="border-b hover:bg-gray-50">
                         <td className="p-4">
                           <div className="font-medium text-gray-900">{lesson.title}</div>
-                          <div className="text-sm text-gray-500 mt-1">
+                          <div className="text-sm text-gray-500 mt-1 flex items-center gap-1">
                             by {lesson.author}
+                            {isLessonOwner(lesson) && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-2">
+                                Your Lesson
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="p-4">
@@ -317,27 +363,52 @@ export default function AdminLessonsClient() {
                         <td className="p-4">
                           <div className="flex items-center justify-end gap-2">
                             <Link href={`/admin/lessons/preview/${lesson._id}`}>
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" title="Preview lesson">
                                 <Eye className="h-3 w-3" />
                               </Button>
                             </Link>
-                            <Link href={`/admin/lessons/edit/${lesson._id}`}>
-                              <Button variant="outline" size="sm">
+                            {isLessonOwner(lesson) ? (
+                              <Link href={`/admin/lessons/edit/${lesson._id}`}>
+                                <Button variant="outline" size="sm" title="Edit lesson">
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled 
+                                title="You can only edit lessons you created"
+                                className="cursor-not-allowed opacity-50"
+                              >
                                 <Edit className="h-3 w-3" />
                               </Button>
-                            </Link>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteClick(lesson)}
-                              disabled={deleteLoading === lesson._id}
-                            >
-                              {deleteLoading === lesson._id ? (
-                                <div className="animate-spin rounded-full h-3 w-3 border-b border-white" />
-                              ) : (
+                            )}
+                            {isLessonOwner(lesson) ? (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteClick(lesson)}
+                                disabled={deleteLoading === lesson._id}
+                                title="Delete lesson"
+                              >
+                                {deleteLoading === lesson._id ? (
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b border-white" />
+                                ) : (
+                                  <Trash2 className="h-3 w-3" />
+                                )}
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                disabled
+                                title="You can only delete lessons you created"
+                                className="cursor-not-allowed opacity-50"
+                              >
                                 <Trash2 className="h-3 w-3" />
-                              )}
-                            </Button>
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>

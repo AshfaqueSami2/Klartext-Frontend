@@ -1,5 +1,8 @@
 // Grammar Components - Barrel Export
 
+// Navigation
+export { GrammarNavMenu } from './GrammarNavMenu';
+
 // Card Components
 export { TopicCard } from './TopicCard';
 export { LessonCard } from './LessonCard';

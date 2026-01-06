@@ -25,6 +25,8 @@ export { cspPolicy };
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  
+  // Optimize images
   images: {
     remotePatterns: [
       {
@@ -34,7 +36,23 @@ const nextConfig: NextConfig = {
         pathname: '/dkhs18l5i/**',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+  
+  // Generate sitemap automatically
+  async generateBuildId() {
+    return `build-${new Date().getTime()}`;
+  },
+  
+  // Optimize production builds
+  compress: true,
+  poweredByHeader: false,
+  
+  // Add trailing slashes for better SEO
+  trailingSlash: false,
+  
   // Add headers for caching and security
   async headers() {
     return [

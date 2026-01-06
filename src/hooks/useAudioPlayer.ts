@@ -74,7 +74,9 @@ export const useAudioPlayer = () => {
       // Audio elements handle cross-origin differently than fetch()
       const audioElement = document.createElement('audio');
       audioElement.crossOrigin = 'anonymous';
-      audioElement.preload = 'auto';
+      audioElement.preload = 'auto'; // Preload for faster playback
+      // Optimize for faster loading
+      audioElement.setAttribute('importance', 'high');
       audioElementRef.current = audioElement;
 
       const wavesurfer = WaveSurfer.create({
@@ -339,7 +341,25 @@ export const useAudioPlayer = () => {
         
         try {
           console.log('✅ Loading pre-generated audio from Azure:', text);
-          await wavesurferRef.current!.load(text);
+          
+          if (!wavesurferRef.current) {
+            throw new Error('Audio player not initialized');
+          }
+          
+          // Optimize loading with fetch + arraybuffer for faster loading
+          const response = await fetch(text, { 
+            cache: 'force-cache', // Use browser cache
+            mode: 'cors'
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch audio: ${response.statusText}`);
+          }
+          
+          const arrayBuffer = await response.arrayBuffer();
+          await wavesurferRef.current.loadBlob(new Blob([arrayBuffer], { type: 'audio/mpeg' }));
+          
+          console.log('✅ Pre-generated audio loaded successfully');
           return; // Exit early for pre-generated audio
         } catch (loadError: any) {
           console.error('❌ Pre-generated audio load error:', loadError);

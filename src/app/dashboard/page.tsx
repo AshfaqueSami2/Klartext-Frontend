@@ -7,6 +7,7 @@ import Head from "next/head";
 import Image from "next/image";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
+import { useSubscription } from "@/context/SubscriptionContext";
 import { IStats, ILesson } from "@/types";
 import LevelSelectionModal from "@/components/dashboard/LevelSelectionModal";
 
@@ -18,6 +19,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Flame, Trophy, Lock, ArrowRight, Star } from "lucide-react";
 import { toast } from "sonner";
 
+
+
 // Utility function to strip HTML tags and get plain text
 const stripHtmlTags = (html: string): string => {
   if (!html) return "";
@@ -27,27 +30,40 @@ const stripHtmlTags = (html: string): string => {
   return tempDiv.textContent || tempDiv.innerText || "";
 };
 
-// Constants
-const LEVEL_VALUES: Record<string, number> = {
-  A1: 1,
-  A2: 2,
-  B1: 3,
-  B2: 4,
-  C1: 5,
-  C2: 6,
-};
-
-const WORDS_PER_LEVEL = 50;
+// Free vs Premium levels
+const PREMIUM_LEVELS = ["B1", "B2", "C1", "C2"];
 
 // Utility functions
 const getOnboardingKey = (userId?: string, email?: string) =>
   `onboarding_completed_${userId || email}`;
 
-const calculateProgress = (totalWords: number) =>
-  Math.min((totalWords / WORDS_PER_LEVEL) * 100, 100);
+// Calculate progress based on lessons completed at current level
+const calculateLevelProgress = (
+  currentLevel: string,
+  lessons: ILesson[]
+): number => {
+  // Filter lessons at current level
+  const currentLevelLessons = lessons.filter(
+    (lesson) => lesson.difficulty === currentLevel
+  );
+
+  // If no lessons at this level, show 100% (level complete)
+  if (currentLevelLessons.length === 0) {
+    return 100;
+  }
+
+  // Count completed lessons at current level
+  const completedAtCurrentLevel = currentLevelLessons.filter(
+    (lesson) => lesson.isCompleted
+  ).length;
+
+  // Calculate percentage
+  return Math.round((completedAtCurrentLevel / currentLevelLessons.length) * 100);
+};
 
 function DashboardContent() {
   const { user } = useAuth();
+  const { subscription } = useSubscription();
   const searchParams = useSearchParams();
 
   const [stats, setStats] = useState<IStats | null>(null);
@@ -146,8 +162,13 @@ function DashboardContent() {
 
   if (loading) return <DashboardSkeleton />;
 
-  const userRank = stats ? LEVEL_VALUES[stats.currentLevel] || 1 : 1;
-  const progress = calculateProgress(stats?.totalWords || 0);
+  const progress = calculateLevelProgress(stats?.currentLevel || 'A1', lessons);
+  
+  // Calculate lessons at current level
+  const currentLevel = stats?.currentLevel || 'A1';
+  const currentLevelLessons = lessons.filter(lesson => lesson.difficulty === currentLevel);
+  const completedCurrentLevelLessons = currentLevelLessons.filter(lesson => lesson.isCompleted).length;
+  const totalCurrentLevelLessons = currentLevelLessons.length;
 
   return (
     <>
@@ -185,18 +206,26 @@ function DashboardContent() {
         )}
 
         {/* Main Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
-          {/* Left Content - Main Dashboard */}
-          <div className="lg:col-span-8 xl:col-span-9 space-y-8 p-6">
+        <div className="relative overflow-hidden">
+          {/* Futuristic Background Elements */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 pointer-events-none"></div>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700 pointer-events-none"></div>
+          
+          {/* Main Content */}
+          <div className="relative space-y-8 p-6 max-w-7xl mx-auto">
             {/* Welcome Header */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-foreground">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-purple-500/10 to-transparent backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-lg">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-blue-600 bg-clip-text text-transparent">
               Willkommen, {user?.name || "Student"}!
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-2 flex items-center gap-2">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               You are currently at{" "}
-              <strong>Level {stats?.currentLevel || "A1"}</strong>
+              <span className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full font-bold text-primary">
+                Level {stats?.currentLevel || "A1"}
+              </span>
             </p>
           </div>
 
@@ -206,19 +235,21 @@ function DashboardContent() {
             role="status"
             aria-label="Learning progress summary"
           >
-            <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-4 py-2 rounded-full border border-orange-100 text-sm font-medium shadow-sm">
+            <div className="relative flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 backdrop-blur-sm text-orange-100 px-5 py-2.5 rounded-full border border-orange-400/30 text-sm font-bold shadow-lg overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-400/20 to-orange-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
               <Flame
-                className="h-4 w-4 fill-orange-500 text-orange-500"
+                className="h-5 w-5 fill-orange-400 text-orange-400 drop-shadow-glow"
                 aria-hidden="true"
               />
-              <span>{stats?.completedLessons || 0} Lessons</span>
+              <span className="relative z-10">{stats?.completedLessons || 0} Lessons</span>
             </div>
-            <div className="flex items-center gap-2 bg-yellow-50 text-yellow-700 px-4 py-2 rounded-full border border-yellow-100 text-sm font-medium shadow-sm">
+            <div className="relative flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-amber-600/20 backdrop-blur-sm text-yellow-100 px-5 py-2.5 rounded-full border border-yellow-400/30 text-sm font-bold shadow-lg overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-400/20 to-yellow-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
               <Trophy
-                className="h-4 w-4 fill-yellow-500 text-yellow-500"
+                className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-glow"
                 aria-hidden="true"
               />
-              <span>{stats?.coins || 0} Coins</span>
+              <span className="relative z-10">{stats?.coins || 0} Coins</span>
             </div>
           </div>
         </header>
@@ -228,41 +259,56 @@ function DashboardContent() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
           aria-label="Learning Statistics"
         >
-          <Card className="border-l-4 border-l-primary shadow-sm bg-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
+          <Card className="relative overflow-hidden border border-primary/20 shadow-xl bg-gradient-to-br from-primary/5 to-transparent backdrop-blur-sm group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Total Words Learned
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
+              <div className="p-2 bg-primary/20 rounded-lg border border-primary/30">
+                <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+            <CardContent className="relative z-10">
+              <div className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                 {stats?.totalWords || 0}
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                 Keep growing your vocabulary!
               </p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm bg-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
+          <Card className="relative overflow-hidden border border-purple-500/20 shadow-xl bg-gradient-to-br from-purple-500/5 to-transparent backdrop-blur-sm group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Level Progress
               </CardTitle>
-              <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded">
+              <span className="text-xs font-bold bg-gradient-to-r from-primary to-purple-600 text-white px-3 py-1.5 rounded-lg shadow-lg border border-primary/30">
                 {stats?.currentLevel || "A1"}
               </span>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
+            <CardContent className="relative z-10">
+              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 {progress.toFixed(0)}%
               </div>
-              <Progress
-                value={progress}
-                className="h-2 mt-2 bg-gray-100"
-                aria-label="Learning progress"
-              />
+              <div className="relative mt-3">
+                <Progress
+                  value={progress}
+                  className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner"
+                  aria-label="Learning progress"
+                />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-purple-500/20 to-blue-500/20 blur-sm"></div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <span className="inline-block w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
+                {totalCurrentLevelLessons === 0 
+                  ? `No lessons at ${currentLevel} level yet` 
+                  : `${completedCurrentLevelLessons}/${totalCurrentLevelLessons} lessons completed at ${currentLevel}`
+                }
+              </p>
             </CardContent>
           </Card>
         </section>
@@ -270,8 +316,10 @@ function DashboardContent() {
         {/* Lessons Section */}
         <section aria-label="Available German Stories">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
-              <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="text-2xl font-bold flex items-center gap-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <div className="p-2 bg-gradient-to-br from-primary to-purple-600 rounded-lg shadow-lg">
+                <BookOpen className="h-6 w-6 text-white" aria-hidden="true" />
+              </div>
               Recommended Stories
             </h2>
           </div>
@@ -283,17 +331,26 @@ function DashboardContent() {
               </div>
             ) : (
               lessons.map((lesson) => {
-                const lessonRank = LEVEL_VALUES[lesson.difficulty] || 0;
-                const isLocked = userRank < lessonRank;
+                const isPremiumLevel = PREMIUM_LEVELS.includes(lesson.difficulty);
+                const hasPremiumAccess = subscription?.isPremium || false;
+                
+                // Simple lock logic: Premium levels need subscription
+                const isLocked = isPremiumLevel && !hasPremiumAccess;
+                
                 const isRecommended = lesson.difficulty === stats?.currentLevel;
 
                 return (
                   <Card
                     key={lesson._id}
-                    className={`flex flex-col justify-between transition-all duration-300 hover:shadow-md border-border ${
-                      isLocked ? "bg-muted opacity-80" : "bg-card"
+                    className={`relative flex flex-col justify-between transition-all duration-500 border overflow-hidden group ${
+                      isLocked 
+                        ? "bg-muted/50 opacity-60 border-border/50" 
+                        : "bg-card/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 hover:shadow-2xl hover:scale-[1.03]"
                     }`}
                   >
+                    {!isLocked && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    )}
                     {/* Cover Image */}
                     {lesson.coverImage && (
                       <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
@@ -308,36 +365,42 @@ function DashboardContent() {
                     )}
                     
                     <CardHeader>
-                      <div className="flex justify-between items-start mb-2">
-                        <span
-                          className={`text-xs font-bold px-2 py-1 rounded border ${
-                            isRecommended
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : isLocked
-                              ? "bg-gray-200 text-gray-600 border-gray-300"
-                              : "bg-blue-50 text-blue-700 border-blue-200"
-                          }`}
-                          aria-label={`Difficulty level ${lesson.difficulty}`}
-                        >
-                          {lesson.difficulty}
-                        </span>
-                        {isLocked && (
-                          <Lock
-                            className="h-4 w-4 text-gray-400"
-                            aria-label="Locked content"
-                          />
-                        )}
-                        {!isLocked && isRecommended && (
-                          <Star
-                            className="h-4 w-4 text-yellow-500 fill-yellow-500"
-                            aria-label="Recommended for you"
-                          />
-                        )}
-                        {lesson.isCompleted && (
-                          <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
-                            ✓ Completed
-                          </div>
-                        )}
+                      <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`text-xs font-bold px-2 py-1 rounded border ${
+                              isRecommended
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : isLocked
+                                ? "bg-gray-200 text-gray-600 border-gray-300"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
+                            aria-label={`Difficulty level ${lesson.difficulty}`}
+                          >
+                            {lesson.difficulty}
+                          </span>
+                          
+                          {lesson.isCompleted && (
+                            <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                              ✓ Completed
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {isLocked && (
+                            <Lock
+                              className="h-4 w-4 text-gray-400"
+                              aria-label="Locked content"
+                            />
+                          )}
+                          {!isLocked && isRecommended && (
+                            <Star
+                              className="h-4 w-4 text-yellow-500 fill-yellow-500"
+                              aria-label="Recommended for you"
+                            />
+                          )}
+                        </div>
                       </div>
                       <CardTitle className="text-lg font-serif text-card-foreground leading-tight">
                         {lesson.title}
@@ -352,14 +415,15 @@ function DashboardContent() {
                       </p>
 
                       {isLocked ? (
-                        <LiquidButton
-                          disabled
-                          variant="outline"
-                          className="w-full text-muted-foreground border-border"
-                          aria-label={`Unlock by reaching level ${lesson.difficulty}`}
-                        >
-                          Locked (Reach Level {lesson.difficulty})
-                        </LiquidButton>
+                        <Link href="/pricing">
+                          <LiquidButton
+                            variant="outline"
+                            className="w-full text-muted-foreground border-border hover:border-primary hover:text-primary"
+                            aria-label="Unlock with premium subscription"
+                          >
+                            🔒 Unlock with Premium
+                          </LiquidButton>
+                        </Link>
                       ) : (
                         <Link
                           href={`/read/${lesson._id}`}
@@ -385,53 +449,6 @@ function DashboardContent() {
             )}
           </div>
         </section>
-          </div>
-          
-          {/* Right Sidebar - Cartoon Character */}
-          <div className="lg:col-span-4 xl:col-span-3 hidden lg:block relative">
-            <div className="sticky top-8 h-screen flex items-center justify-center">
-              <div className="relative w-full max-w-md mx-auto">
-                {/* Background decoration */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-3xl transform rotate-3 opacity-60"></div>
-                <div className="absolute inset-0 bg-gradient-to-tl from-green-50 to-yellow-50 dark:from-green-950/20 dark:to-yellow-950/20 rounded-3xl transform -rotate-2 opacity-40"></div>
-                
-                {/* Main image container */}
-                <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-100 dark:border-gray-700">
-                  <Image 
-                    src="/cartoon/photorealistic-hyper-realistic-image-white-background-ai-generated-by-freepik_643360-534785.avif" 
-                    alt="Learning companion character"
-                    width={400}
-                    height={500}
-                    className="w-full h-auto object-contain transform hover:scale-105 transition-transform duration-300 drop-shadow-lg"
-                    priority={false}
-                  />
-                  
-                  {/* Floating elements */}
-                  <div className="absolute -top-4 -right-4 bg-yellow-400 text-yellow-900 px-3 py-2 rounded-full text-sm font-bold shadow-lg animate-bounce">
-                    Level {stats?.currentLevel || 'A1'}!
-                  </div>
-                  
-                  <div className="absolute -bottom-4 -left-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
-                    🎯 Keep Learning!
-                  </div>
-                  
-                  {/* Progress circle */}
-                  <div className="absolute top-4 left-4 w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
-                    {Math.round(progress)}%
-                  </div>
-                </div>
-                
-                {/* Motivational text */}
-                <div className="mt-6 text-center">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                    Du schaffst das! 💪
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Your learning companion is here to support your German journey!
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </main>

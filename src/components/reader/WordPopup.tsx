@@ -74,31 +74,41 @@ export default function WordPopup({ word, lessonId, onClose, onSave, isSaved }: 
     return () => { isMounted = false; };
   }, [word]);
 
-  // Handle pronunciation using Azure TTS
+  // Handle pronunciation using Azure TTS with Web Speech API fallback
   const handlePronunciation = async () => {
-    if (isSpeaking && currentAudio) {
+    if (isSpeaking) {
       // Stop current audio
-      currentAudio.pause();
-      currentAudio.src = '';
-      setCurrentAudio(null);
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+        setCurrentAudio(null);
+      }
+      // Cancel any web speech
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
       setIsSpeaking(false);
       return;
     }
 
+    setIsSpeaking(true);
+    let audioPlayed = false;
+
     try {
-      setIsSpeaking(true);
-      
-      // Generate audio using Azure TTS with male German voice
+      // Try Azure TTS first
       const audioResponse = await ttsService.generateTextAudio(word, {
-        voiceName: 'de-DE-ConradNeural', // Male German voice
+        voiceName: 'de-DE-ConradNeural',
         language: 'de-DE',
-        speed: 0.8, // Slightly slower for learning
+        speed: 0.9,
         pitch: 0
       });
 
-      if (audioResponse.success) {
+      if (audioResponse.success && audioResponse.audioUrl) {
         const audio = new Audio(audioResponse.audioUrl);
         setCurrentAudio(audio);
+        
+        // Preload for faster playback
+        audio.preload = 'auto';
         
         audio.onended = () => {
           setIsSpeaking(false);
@@ -106,19 +116,73 @@ export default function WordPopup({ word, lessonId, onClose, onSave, isSaved }: 
         };
         
         audio.onerror = () => {
-          setIsSpeaking(false);
-          setCurrentAudio(null);
-          toast.error('Pronunciation failed');
+          // Only handle real errors with actual error information
+          const error = audio.error;
+          if (error && error.code && !audioPlayed) {
+            console.error('Audio playback error:', {
+              code: error.code,
+              message: error.message
+            });
+            setIsSpeaking(false);
+            setCurrentAudio(null);
+            speakWithWebSpeechAPI(word);
+          }
+          // Silently ignore spurious errors after playback started
         };
         
+        // Add playing event to confirm audio started
+        audio.onplaying = () => {
+          audioPlayed = true;
+        };
+        
+        // Try to play and mark as successful
         await audio.play();
+        audioPlayed = true; // Mark that playback started successfully
       } else {
-        throw new Error('Failed to generate audio');
+        throw new Error('Invalid audio response');
       }
     } catch (error: any) {
+      console.error('TTS Error:', error);
+      // Only fallback if no audio was played
+      if (!audioPlayed) {
+        speakWithWebSpeechAPI(word);
+      } else {
+        setIsSpeaking(false);
+      }
+    }
+  };
+
+  // Web Speech API fallback for pronunciation
+  const speakWithWebSpeechAPI = (text: string) => {
+    if ('speechSynthesis' in window) {
+      try {
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'de-DE';
+        utterance.rate = 0.85; // Slightly slower for learning
+        utterance.pitch = 1;
+        
+        utterance.onend = () => {
+          setIsSpeaking(false);
+        };
+        
+        utterance.onerror = (e) => {
+          console.error('Speech synthesis error:', e);
+          setIsSpeaking(false);
+          toast.error('Pronunciation unavailable');
+        };
+        
+        window.speechSynthesis.speak(utterance);
+      } catch (error) {
+        console.error('Web Speech API error:', error);
+        setIsSpeaking(false);
+        toast.error('Pronunciation unavailable');
+      }
+    } else {
       setIsSpeaking(false);
-      setCurrentAudio(null);
-      toast.error('Pronunciation failed');
+      toast.error('Pronunciation not supported in this browser');
     }
   };
 

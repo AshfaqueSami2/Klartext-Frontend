@@ -25,6 +25,8 @@ export interface ILesson {
     name: string;
   };
   isCompleted?: boolean;
+  isFreePreview?: boolean;
+  lessonNumber?: number;
 }
 
 export interface IStudentProfile {

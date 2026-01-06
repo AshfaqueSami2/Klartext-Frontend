@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { 
   Home, 
@@ -12,7 +14,8 @@ import {
   Menu, 
   X,
   ChevronDown,
-  Target
+  Target,
+  Zap
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -30,107 +33,158 @@ export default function AdminNavbar() {
       name: "Dashboard",
       href: "/admin",
       icon: BarChart3,
-      description: "Admin overview"
+      description: "Admin overview",
+      gradient: "from-violet-500 to-purple-500"
     },
     {
       name: "Regular Lessons",
       href: "/admin/lessons",
       icon: BookOpen,
-      description: "Standard lessons"
+      description: "Standard lessons",
+      gradient: "from-blue-500 to-cyan-500"
     },
     {
       name: "Grammar Lessons",
       href: "/admin/grammar",
       icon: Target,
-      description: "Grammar management"
+      description: "Grammar management",
+      gradient: "from-emerald-500 to-teal-500"
     },
     {
       name: "Users",
       href: "/admin/users",
       icon: Users,
-      description: "User management"
+      description: "User management",
+      gradient: "from-pink-500 to-rose-500"
     }
   ];
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="backdrop-blur-xl bg-gradient-to-r from-background/95 via-background/90 to-background/95 border-b border-white/10 sticky top-0 z-50">
+      {/* Futuristic animated background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-pink-500/5 opacity-50" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
+          {/* Logo and Brand with Glow */}
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">K</span>
-              </div>
-              <span className="font-bold text-xl text-gray-900 dark:text-white">
-                Klartext
+            <Link href="/" className="flex items-center space-x-3 group">
+              <motion.div 
+                className="relative w-10 h-10 bg-gradient-to-br from-purple-600 via-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                animate={{ 
+                  boxShadow: [
+                    "0 0 20px rgba(168, 85, 247, 0.4)",
+                    "0 0 30px rgba(59, 130, 246, 0.6)",
+                    "0 0 20px rgba(168, 85, 247, 0.4)",
+                  ]
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Image
+                  src="/logo/main logo.png"
+                  alt="KlarText Logo"
+                  width={28}
+                  height={28}
+                  className="object-contain p-1 mix-blend-lighten"
+                />
+              </motion.div>
+              <span className="font-bold text-xl bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent font-serif group-hover:from-purple-300 group-hover:via-blue-300 group-hover:to-cyan-300 transition-all">
+                KlarText
               </span>
             </Link>
-            <div className="hidden md:block">
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+            <motion.div 
+              className="hidden md:block"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-medium rounded-full flex items-center gap-1 shadow-lg shadow-purple-500/30">
+                <Zap className="w-3 h-3" />
                 Admin
               </span>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => {
+          {/* Desktop Navigation with Futuristic Design */}
+          <div className="hidden md:flex items-center space-x-2">
+            {navigationItems.map((item, index) => {
               const Icon = item.icon;
               return (
-                <Link key={item.name} href={item.href}>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.name}</span>
-                  </Button>
-                </Link>
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Link href={item.href}>
+                    <Button 
+                      variant="ghost" 
+                      className="group relative flex items-center space-x-2 px-4 py-2 hover:bg-white/5 backdrop-blur-sm rounded-xl border border-transparent hover:border-white/10 transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Animated gradient background on hover */}
+                      <div className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                      
+                      <div className="relative p-1.5 rounded-lg bg-white/5 group-hover:bg-white/10 transition-all duration-300">
+                        <Icon className="w-4 h-4 transition-transform group-hover:scale-110 group-hover:rotate-3" />
+                      </div>
+                      <span className="relative font-medium">{item.name}</span>
+                      
+                      {/* Hover shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-[-100%] group-hover:translate-x-[100%]" 
+                           style={{ transition: 'transform 0.6s ease-in-out' }} />
+                    </Button>
+                  </Link>
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Right side actions */}
-          <div className="flex items-center space-x-4">
-            {/* Home Link */}
+          {/* Right side actions with Futuristic Design */}
+          <div className="flex items-center space-x-3">
+            {/* Home Link with Gradient */}
             <Link href="/">
-              <Button variant="outline" size="sm" className="hidden sm:flex items-center space-x-2">
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="outline" size="sm" className="hidden sm:flex items-center space-x-2 border-white/10 hover:border-purple-500/50 bg-white/5 hover:bg-purple-500/10 backdrop-blur-sm transition-all duration-300">
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </Button>
+              </motion.div>
             </Link>
 
-            {/* Admin Menu Dropdown */}
+            {/* Admin Menu Dropdown with Gradient */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                  <Settings className="w-4 h-4" />
+                <Button variant="ghost" size="sm" className="flex items-center space-x-1 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-xl backdrop-blur-sm transition-all duration-300">
+                  <div className="p-1.5 rounded-lg bg-white/5">
+                    <Settings className="w-4 h-4" />
+                  </div>
                   <ChevronDown className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-xl border-white/10">
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/profile" className="flex items-center space-x-2">
+                  <Link href="/admin/profile" className="flex items-center space-x-2 hover:bg-purple-500/10 cursor-pointer">
                     <Users className="w-4 h-4" />
                     <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/analytics" className="flex items-center space-x-2">
+                  <Link href="/admin/analytics" className="flex items-center space-x-2 hover:bg-blue-500/10 cursor-pointer">
                     <BarChart3 className="w-4 h-4" />
                     <span>System Analytics</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/analytics/user" className="flex items-center space-x-2">
+                  <Link href="/admin/analytics/user" className="flex items-center space-x-2 hover:bg-cyan-500/10 cursor-pointer">
                     <Users className="w-4 h-4" />
                     <span>User Analytics</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/settings" className="flex items-center space-x-2">
+                  <Link href="/admin/settings" className="flex items-center space-x-2 hover:bg-purple-500/10 cursor-pointer">
                     <Settings className="w-4 h-4" />
                     <span>Settings</span>
                   </Link>
@@ -142,7 +196,7 @@ export default function AdminNavbar() {
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="md:hidden hover:bg-white/5 border border-transparent hover:border-white/10 rounded-xl"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}

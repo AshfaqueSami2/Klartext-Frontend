@@ -99,3 +99,30 @@
     transition: background-color 0.2s, border-color 0.2s, color 0.2s;
   }
 }
+
+@layer utilities {
+  /* Futuristic glow effects */
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  
+  /* Delay animation utilities */
+  .delay-700 {
+    animation-delay: 700ms;
+  }
+  
+  /* Custom animations for futuristic look */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 3s infinite linear;
+    background-size: 200% 100%;
+  }
+}
