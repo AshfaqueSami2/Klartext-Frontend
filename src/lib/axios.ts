@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 1. Base URL (Point to your Backend) - Use environment variable
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://klartext-backend.onrender.com/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -72,7 +72,7 @@ api.interceptors.response.use(
       try {
         // Try to refresh the token
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/auth/refresh`,
+          `${process.env.NEXT_PUBLIC_API_URL || 'https://klartext-backend.onrender.com/api/v1'}/auth/refresh`,
           {},
           { withCredentials: true }
         );

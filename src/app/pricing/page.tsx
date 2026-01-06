@@ -39,7 +39,7 @@ export default function PricingPage() {
 
   const fetchPlans = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://klartext-backend.onrender.com/api/v1';
       const response = await fetch(`${apiUrl}/subscription/plans`);
       const data = await response.json();
       
@@ -67,7 +67,7 @@ export default function PricingPage() {
       
       const token = localStorage.getItem('accessToken');
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://klartext-backend.onrender.com/api/v1';
       const response = await fetch(`${apiUrl}/payment/init`, {
         method: 'POST',
         headers: {

@@ -227,7 +227,7 @@ export default function LandingPage() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-50 w-full px-6 py-4 backdrop-blur-xl bg-white/5 border-b border-white/10 sticky top-0"
+        className="z-50 w-full px-6 py-4 backdrop-blur-xl bg-white/5 border-b border-white/10 sticky top-0"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <motion.div 

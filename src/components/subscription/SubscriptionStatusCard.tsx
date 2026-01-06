@@ -37,7 +37,7 @@ export default function SubscriptionStatusCard() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://klartext-backend.onrender.com/api/v1';
       const response = await fetch(`${apiUrl}/subscription/status`, {
         headers: {
           'Authorization': `Bearer ${token}`
