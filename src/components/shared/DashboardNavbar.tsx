@@ -52,14 +52,14 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center justify-between px-6">
+      <div className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
         {/* Left Section - Title and Breadcrumb */}
-        <div className="flex items-center gap-4">
-          {/* Mobile Menu Toggle */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+          {/* Mobile Menu Toggle - Hidden when Sidebar handles this */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden flex-shrink-0 hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -70,22 +70,22 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
           </Button>
 
           {/* Logo */}
-          <Link href="/dashboard" className="hidden sm:block hover:opacity-80 transition-opacity">
+          <Link href="/dashboard" className="hidden sm:block flex-shrink-0 hover:opacity-90 transition-opacity">
             <Image
-              src="/logo/main logo.png"
+              src="/logo/logo final 1.png"
               alt="KlarText Logo"
-              width={45}
-              height={45}
-              className="object-contain mix-blend-multiply dark:mix-blend-normal dark:invert"
+              width={120}
+              height={48}
+              className="h-12 sm:h-14 w-auto object-contain"
               priority
             />
           </Link>
 
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+          <div className="min-w-0 ml-10 md:ml-0">
+            <h1 className="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text truncate">
               {getPageTitle()}
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
               Welcome back, {user?.name || 'Student'}!
             </p>
           </div>
@@ -93,7 +93,7 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
 
         {/* Center Section - Search (optional) */}
         {showSearch && (
-          <div className="hidden lg:flex flex-1 max-w-md mx-8">
+          <div className="hidden lg:flex flex-1 max-w-md mx-4 xl:mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -105,37 +105,37 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
         )}
 
         {/* Right Section - Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
           {/* Premium Badge or Upgrade Button */}
           {subscription?.isPremium ? (
             <button
               type="button"
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 hover:from-yellow-500/20 hover:to-orange-500/20 transition-all cursor-pointer"
+              className="hidden xs:flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 hover:from-yellow-500/20 hover:to-orange-500/20 transition-all cursor-pointer"
               onClick={() => setShowPackageModal(true)}
             >
-              <Crown className="w-4 h-4 text-yellow-500" />
-              <span className="text-xs font-bold text-foreground capitalize">
+              <Crown className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+              <span className="text-[10px] sm:text-xs font-bold text-foreground capitalize hidden sm:inline">
                 {subscription.subscriptionPlan}
               </span>
-              <Sparkles className="w-3 h-3 text-yellow-500" />
+              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 hidden sm:block" />
             </button>
           ) : (
             <Link href="/pricing">
               <Button 
                 size="sm" 
-                className="hidden sm:flex gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                className="hidden xs:flex gap-1 sm:gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Crown className="w-4 h-4" />
-                <span className="font-semibold">Upgrade</span>
+                <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="font-semibold hidden sm:inline">Upgrade</span>
               </Button>
             </Link>
           )}
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9">
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
             <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-600 text-[10px]"
+              className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-600 text-[8px] sm:text-[10px]"
             >
               3
             </Badge>
@@ -148,10 +148,20 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
 
           {/* User Avatar */}
           <Link href="/dashboard/profile">
-            <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:scale-105 transition-transform shadow-lg">
-              {user?.name?.[0]?.toUpperCase() || "U"}
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform shadow-lg">
+              {user?.profileImage ? (
+                <img 
+                  src={user.profileImage} 
+                  alt={user.name || "User"}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm">
+                  {user?.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
               {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-background" />
             </div>
           </Link>
         </div>
@@ -160,11 +170,11 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur">
-          <div className="p-4 space-y-2">
+          <div className="p-3 sm:p-4 space-y-2">
             <Link href="/pricing">
               <Button 
                 size="sm" 
-                className="w-full gap-2 bg-gradient-to-r from-primary to-purple-600"
+                className="w-full gap-2 bg-gradient-to-r from-primary to-purple-600 text-sm"
               >
                 <Crown className="w-4 h-4" />
                 <span>Upgrade to Premium</span>

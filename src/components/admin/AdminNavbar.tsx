@@ -67,32 +67,17 @@ export default function AdminNavbar() {
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand with Glow */}
+          {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <motion.div 
-                className="relative w-10 h-10 bg-gradient-to-br from-purple-600 via-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                animate={{ 
-                  boxShadow: [
-                    "0 0 20px rgba(168, 85, 247, 0.4)",
-                    "0 0 30px rgba(59, 130, 246, 0.6)",
-                    "0 0 20px rgba(168, 85, 247, 0.4)",
-                  ]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Image
-                  src="/logo/main logo.png"
-                  alt="KlarText Logo"
-                  width={28}
-                  height={28}
-                  className="object-contain p-1 mix-blend-lighten"
-                />
-              </motion.div>
-              <span className="font-bold text-xl bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent font-serif group-hover:from-purple-300 group-hover:via-blue-300 group-hover:to-cyan-300 transition-all">
-                KlarText
-              </span>
+            <Link href="/" className="flex items-center group">
+              <Image
+                src="/logo/logo final 1.png"
+                alt="KlarText Logo"
+                width={140}
+                height={56}
+                className="h-12 sm:h-14 w-auto object-contain"
+                priority
+              />
             </Link>
             <motion.div 
               className="hidden md:block"

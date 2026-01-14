@@ -45,47 +45,35 @@ const AdminSideBar = () => {
   const links = user?.role === 'admin' ? adminLinks : studentLinks;
 
   return (
-    <div className="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-background/95 via-background/90 to-background/95 border-r border-white/10">
+    <div className="hidden md:flex h-screen w-56 lg:w-64 flex-col fixed left-0 top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-background/95 via-background/90 to-background/95 border-r border-white/10">
       {/* Futuristic animated background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-pink-500/5 opacity-50" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
       
-      {/* Logo Header with Glow Effect */}
-      <div className="relative h-20 flex items-center justify-between px-6 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+      {/* Logo Header */}
+      <div className="relative h-16 sm:h-20 flex items-center justify-between px-4 sm:px-6 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
         <div className="flex items-center gap-3">
-          <motion.div 
-            className="relative h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-500 to-cyan-500 shadow-lg shadow-purple-500/50"
-            animate={{ 
-              boxShadow: [
-                "0 0 20px rgba(168, 85, 247, 0.4)",
-                "0 0 30px rgba(59, 130, 246, 0.6)",
-                "0 0 20px rgba(168, 85, 247, 0.4)",
-              ]
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
+          <Link href="/">
             <Image
-              src="/logo/main logo.png"
+              src="/logo/logo final 1.png"
               alt="KlarText Logo"
-              width={32}
-              height={32}
-              className="object-contain p-1 mix-blend-lighten"
+              width={120}
+              height={48}
+              className="h-12 sm:h-14 w-auto object-contain"
+              priority
             />
-          </motion.div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent font-serif">KlarText</span>
-            {user?.role === 'admin' && (
-              <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full flex items-center gap-1 w-fit">
-                <Zap className="w-3 h-3" />
-                Admin
-              </span>
-            )}
-          </div>
+          </Link>
+          {user?.role === 'admin' && (
+            <span className="text-[10px] sm:text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1 w-fit">
+              <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              Admin
+            </span>
+          )}
         </div>
         <SimpleThemeToggle />
       </div>
 
-      <div className="relative flex-1 flex flex-col gap-2 p-4 overflow-y-auto">
+      <div className="relative flex-1 flex flex-col gap-1.5 sm:gap-2 p-3 sm:p-4 overflow-y-auto scrollbar-hide">
         {links.map((item, index) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;

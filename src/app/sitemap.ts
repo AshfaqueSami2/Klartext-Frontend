@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://klartext.com';
+  const baseUrl = 'https://www.klartext.tech';
   const currentDate = new Date().toISOString();
 
   return [

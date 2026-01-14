@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { LiquidButton } from '@/components/ui/liquid-button';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
-import { TTSOptions } from '@/services/tts.service';
+import { TTSOptions, ttsService } from '@/services/tts.service';
 
 interface AudioPlayerProps {
   text?: string;
@@ -37,12 +37,134 @@ interface AudioPlayerProps {
   onError?: (error: string) => void;
 }
 
+// Simple minimal audio player that doesn't need WaveSurfer
+const MinimalAudioPlayer: React.FC<{
+  text: string;
+  options?: TTSOptions;
+  className?: string;
+  onError?: (error: string) => void;
+}> = ({ text, options = {}, className = '', onError }) => {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  const handlePlay = async () => {
+    if (isLoading) return;
+
+    // If already playing, pause
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    // If we have an audio element with a source, play it
+    if (audioRef.current && audioRef.current.src && !audioRef.current.src.includes('blob:')) {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        return;
+      } catch {
+        // Fall through to generate new audio
+      }
+    }
+
+    // Generate new audio
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const ttsOptions: TTSOptions = {
+        voiceName: options.voiceName || 'de-DE-ConradNeural',
+        language: options.language || 'de-DE',
+        speed: options.speed || 1.0,
+        pitch: options.pitch || 0
+      };
+
+      const response = await ttsService.generateTextAudio(text, ttsOptions);
+
+      if (response.success && response.audioUrl) {
+        // Create new audio element
+        const audio = new Audio(response.audioUrl);
+        audio.crossOrigin = 'anonymous';
+        
+        audio.onended = () => {
+          setIsPlaying(false);
+        };
+        
+        audio.onerror = () => {
+          setError('Audio playback failed');
+          setIsPlaying(false);
+          onError?.('Audio playback failed');
+        };
+
+        audioRef.current = audio;
+        await audio.play();
+        setIsPlaying(true);
+      } else {
+        throw new Error(response.message || 'Failed to generate audio');
+      }
+    } catch (err: any) {
+      const errorMsg = err.message || 'Failed to generate audio';
+      setError(errorMsg);
+      onError?.(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <LiquidButton
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          setError(null);
+          handlePlay();
+        }}
+        className={`w-8 h-8 p-0 text-red-500 ${className}`}
+      >
+        <RotateCcw className="h-4 w-4" />
+      </LiquidButton>
+    );
+  }
+
+  return (
+    <LiquidButton
+      variant="ghost"
+      size="sm"
+      onClick={handlePlay}
+      disabled={isLoading}
+      className={`w-8 h-8 p-0 ${className}`}
+    >
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : isPlaying ? (
+        <Pause className="h-4 w-4" />
+      ) : (
+        <Volume2 className="h-4 w-4" />
+      )}
+    </LiquidButton>
+  );
+};
+
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   text,
   lessonId,
   lessonContent,
-  preGeneratedAudioUrl: _preGeneratedAudioUrl, // Reserved for future pre-cached audio support
-  audioStatus: _audioStatus = 'pending', // Reserved for future audio status handling
+  preGeneratedAudioUrl, // Pre-generated audio URL from admin
+  audioStatus = 'pending', // Audio generation status
   options = {},
   variant = 'compact',
   showDownload = false,
@@ -52,7 +174,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   onPause,
   onError
 }) => {
+  // For minimal variant, use the simple MinimalAudioPlayer
+  if (variant === 'minimal' && text) {
+    return <MinimalAudioPlayer text={text} options={options} className={className} onError={onError} />;
+  }
+
   const waveformRef = React.useRef<HTMLDivElement>(null);
+  const hasLoadedPreGenerated = React.useRef(false);
   
   // Enhanced state for new features
   const [showSettings, setShowSettings] = React.useState(false);
@@ -102,6 +230,16 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     };
   }, [initializeWavesurfer, destroyWavesurfer, variant]);
 
+  // Load pre-generated audio if available (fast path - no API call needed)
+  React.useEffect(() => {
+    if (preGeneratedAudioUrl && audioStatus === 'ready' && !hasLoadedPreGenerated.current && !audioUrl && !isLoading) {
+      hasLoadedPreGenerated.current = true;
+      console.log('🎵 Loading pre-generated audio from admin:', preGeneratedAudioUrl);
+      // Use generateAndPlay with the URL directly - it will detect it's a blob URL and load it
+      generateAndPlay(preGeneratedAudioUrl, options);
+    }
+  }, [preGeneratedAudioUrl, audioStatus, audioUrl, isLoading, generateAndPlay, options]);
+
   // Auto-generate and play audio on mount
   React.useEffect(() => {
     if (autoPlay && text && !audioUrl && !isLoading) {
@@ -138,7 +276,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   // Instant audio generation with user settings
   const handleInstantAudio = async () => {
-    if (isGenerating || (!text && !lessonContent && !lessonId)) return;
+    if (isGenerating) return;
     
     setIsGenerating(true);
     try {
@@ -150,7 +288,11 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         ...options
       };
 
-      if (text) {
+      // Priority: Use pre-generated audio if available (instant load, no API call)
+      if (preGeneratedAudioUrl && audioStatus === 'ready') {
+        console.log('🎵 Using pre-generated audio (fast path):', preGeneratedAudioUrl);
+        await generateAndPlay(preGeneratedAudioUrl, audioOptions);
+      } else if (text) {
         await generateAndPlay(text, audioOptions);
       } else if (lessonContent) {
         await generateAndPlay(lessonContent, audioOptions);
@@ -239,27 +381,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           )}
         </div>
       </div>
-    );
-  }
-
-  // Minimal variant - just play button
-  if (variant === 'minimal') {
-    return (
-      <LiquidButton
-        variant="ghost"
-        size="sm"
-        onClick={handlePlayPause}
-        disabled={isLoading}
-        className={`w-8 h-8 p-0 ${className}`}
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : isPlaying && !isPaused ? (
-          <Pause className="h-4 w-4" />
-        ) : (
-          <Play className="h-4 w-4" />
-        )}
-      </LiquidButton>
     );
   }
 

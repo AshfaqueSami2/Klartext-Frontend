@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import DOMPurify from "isomorphic-dompurify";
 import WordPopup from "./WordPopup";
 import { celebrateCompletion, fireConfetti } from "@/components/ui/confetti";
 import AudioPlayer from "@/components/ui/AudioPlayer";
 import VoiceSelector from "@/components/ui/VoiceSelector";
 import api from "@/lib/axios";
+import { Settings, ChevronDown, ChevronUp, Headphones, Sparkles } from "lucide-react";
 
 interface ReaderViewProps {
   lessonId: string;
@@ -190,78 +192,169 @@ export default function ReaderView({
         
         .prose p {
           color: hsl(var(--foreground)) !important;
-          line-height: 1.8;
+          line-height: 2;
+          margin-bottom: 1.5rem;
         }
         
         .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
           color: hsl(var(--foreground)) !important;
         }
         
-        /* Reading container styling */
+        /* Enhanced reading container styling */
         .reading-container {
-          background: hsl(var(--card));
-          border: 1px solid hsl(var(--border));
-          border-radius: 16px;
+          background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
+          border: 1px solid hsl(var(--border) / 0.5);
+          border-radius: 24px;
           padding: 2rem;
-          box-shadow: 0 4px 6px -1px hsl(var(--foreground) / 0.1);
+          box-shadow: 
+            0 4px 6px -1px hsl(var(--foreground) / 0.05),
+            0 10px 15px -3px hsl(var(--foreground) / 0.05),
+            inset 0 1px 0 hsl(var(--background) / 0.5);
+          backdrop-filter: blur(10px);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .reading-container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+        }
+        
+        @media (min-width: 640px) {
+          .reading-container {
+            padding: 2.5rem 3rem;
+            border-radius: 32px;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .reading-container {
+            padding: 3rem 4rem;
+          }
         }
       `}</style>
 
-      <div className="relative max-w-4xl mx-auto p-6">
-        {/* Audio Controls */}
-        <div className="mb-8 space-y-4">
-          {/* Voice Settings Toggle */}
-          <div className="flex justify-center">
-            <button
-              onClick={() => setShowVoiceSettings(!showVoiceSettings)}
-              className="text-sm text-primary hover:text-primary/80 underline flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {showVoiceSettings ? 'Hide' : 'Show'} Voice Settings
-            </button>
-          </div>
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pb-8">
+        {/* Audio Controls Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6 sm:mb-10"
+        >
+          {/* Audio Control Card */}
+          <div className="relative bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-slate-200/50 dark:border-slate-700/50 p-4 sm:p-6 shadow-xl shadow-slate-200/20 dark:shadow-slate-900/50">
+            {/* Decorative gradient */}
+            <div className="absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5 pointer-events-none" />
+            
+            <div className="relative space-y-4">
+              {/* Header with toggle */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25">
+                    <Headphones className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Listen to Story</h3>
+                    <p className="text-xs text-muted-foreground hidden sm:block">Audio narration with voice settings</p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+                  className="flex items-center gap-2 text-xs sm:text-sm text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 px-3 py-2 rounded-xl transition-all duration-300"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline">Voice Settings</span>
+                  {showVoiceSettings ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
 
-          {/* Voice Settings Panel */}
-          {showVoiceSettings && (
-            <div className="flex justify-center">
-              <VoiceSelector variant="card" className="w-full max-w-md" />
+              {/* Voice Settings Panel */}
+              <AnimatePresence>
+                {showVoiceSettings && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                      <VoiceSelector variant="card" className="w-full" />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Main Audio Player */}
+              <div className="flex justify-center pt-2">
+                <AudioPlayer
+                  lessonContent={content}
+                  lessonId={lessonId}
+                  preGeneratedAudioUrl={audioUrl}
+                  audioStatus={audioStatus}
+                  variant="full"
+                  showDownload={true}
+                  className="w-full max-w-lg"
+                />
+              </div>
             </div>
-          )}
-
-          {/* Main Audio Player */}
-          <div className="flex justify-center">
-            <AudioPlayer
-              lessonContent={content}
-              lessonId={lessonId}
-              preGeneratedAudioUrl={audioUrl}
-              audioStatus={audioStatus}
-              variant="full"
-              showDownload={true}
-              className="min-w-[400px]"
-            />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="reading-container">
+        {/* Reading Content Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="reading-container"
+        >
+          {/* Click instruction hint */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-center justify-center gap-2 mb-6 text-xs sm:text-sm text-muted-foreground bg-primary/5 px-4 py-2 rounded-full mx-auto w-fit"
+          >
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span>Click any word to see translation & save it</span>
+          </motion.div>
+          
           <div 
             dangerouslySetInnerHTML={{ __html: processedContent }}
-            className="prose prose-lg max-w-none select-none leading-loose text-lg md:text-xl font-serif"
+            className="prose prose-lg max-w-none select-none leading-loose text-base sm:text-lg md:text-xl font-serif"
             onClick={handleContentClick}
             style={{ color: 'hsl(var(--foreground))' }}
           />
-        </div>
+        </motion.div>
         
-        {/* Finish Lesson Button */}
-        <div className="flex justify-center mt-16 mb-8">
-          <button 
+        {/* Enhanced Finish Lesson Button */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex justify-center mt-12 sm:mt-16 mb-8"
+        >
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={async () => {
               setIsCompleting(true);
               
               if (isPreview) {
-                // Preview mode - just redirect to dashboard
+                // Review mode - call review endpoint then redirect
+                try {
+                  await api.post(`/progress/review/${lessonId}`);
+                  console.log('[ReaderView] Review recorded successfully');
+                } catch (err) {
+                  console.log('[ReaderView] Review endpoint error (non-critical):', err);
+                }
                 window.location.href = '/dashboard';
                 return;
               }
@@ -357,10 +450,41 @@ export default function ReaderView({
                       window.location.href = '/dashboard';
                     }, redirectDelay);
                   }
-              } catch (error) {
+              } catch (error: any) {
                 console.error('Error completing lesson:', error);
                 
-                // Show error notification
+                // Check if it's an "already completed" error - treat this as success
+                const errorMessage = error?.response?.data?.message || '';
+                if (errorMessage.toLowerCase().includes('already completed')) {
+                  console.log('Lesson was already completed, redirecting...');
+                  setIsLessonCompleted(true);
+                  
+                  // Show info notification
+                  if (typeof window !== 'undefined') {
+                    const infoNotification = document.createElement('div');
+                    infoNotification.innerHTML = `
+                      <div class="fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-in slide-in-from-right duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                          <div class="font-semibold">Lesson Already Completed!</div>
+                          <div class="text-sm opacity-90">Redirecting to dashboard...</div>
+                        </div>
+                      </div>
+                    `;
+                    document.body.appendChild(infoNotification);
+                    
+                    setTimeout(() => {
+                      infoNotification.remove();
+                      window.location.href = '/dashboard';
+                    }, 1500);
+                  }
+                  setIsCompleting(false);
+                  return;
+                }
+                
+                // Show error notification for other errors
                 if (typeof window !== 'undefined') {
                   const errorNotification = document.createElement('div');
                   errorNotification.innerHTML = `
@@ -386,48 +510,70 @@ export default function ReaderView({
               }
             }}
             disabled={isCompleting || isLessonCompleted}
-            className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-10 py-4 rounded-full flex items-center gap-3 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-green-400 ${
-              isCompleting || isLessonCompleted ? 'opacity-75 cursor-not-allowed' : ''
+            className={`relative group ${
+              isPreview 
+                ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600' 
+                : 'bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500'
+            } text-white font-semibold px-6 sm:px-10 py-3 sm:py-4 rounded-2xl flex items-center gap-2 sm:gap-3 shadow-xl transition-all duration-500 ${
+              isCompleting || isLessonCompleted ? 'opacity-75 cursor-not-allowed' : 'hover:shadow-2xl'
             }`}
           >
-            {isCompleting ? (
-              <svg className="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2m8.485-8.485l-1.414 1.414M4.929 4.929L3.515 6.343M20 12h2M2 12h2m16.485 8.485l-1.414-1.414M4.929 19.071L3.515 17.657" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
-            <span className="text-lg">
-              {isCompleting ? 'Completing...' : isPreview ? 'Back to Dashboard' : 'Finish Lesson'}
-            </span>
-            {!isCompleting && (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            )}
-          </button>
-        </div>
+            {/* Animated glow effect */}
+            <div className={`absolute -inset-1 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500 ${
+              isPreview 
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-500' 
+                : 'bg-gradient-to-r from-emerald-500 to-teal-500'
+            }`} />
+            
+            <div className="relative flex items-center gap-2 sm:gap-3">
+              {isCompleting ? (
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2m8.485-8.485l-1.414 1.414M4.929 4.929L3.515 6.343M20 12h2M2 12h2m16.485 8.485l-1.414-1.414M4.929 19.071L3.515 17.657" />
+                </svg>
+              ) : isPreview ? (
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              <span className="text-base sm:text-lg">
+                {isCompleting ? 'Completing...' : isPreview ? 'Back to Dashboard' : 'Finish Lesson'}
+              </span>
+              {!isCompleting && (
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              )}
+            </div>
+          </motion.button>
+        </motion.div>
         
         {/* Word Popup */}
-        {selectedWord && (
-          <div 
-            className="fixed z-50"
-            style={{ 
-              left: selectedWord.x, 
-              top: selectedWord.y - 100 
-            }}
-          >
-            <WordPopup 
-              word={selectedWord.text} 
-              lessonId={lessonId} 
-              onSave={handleWordSaved}
-              onClose={() => setSelectedWord(null)}
-              isSaved={savedWords.has(selectedWord.text.toLowerCase())}
-            />
-          </div>
-        )}
+        <AnimatePresence>
+          {selectedWord && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              className="fixed z-50"
+              style={{ 
+                left: Math.min(selectedWord.x, typeof window !== 'undefined' ? window.innerWidth - 340 : selectedWord.x), 
+                top: selectedWord.y - 100 
+              }}
+            >
+              <WordPopup 
+                word={selectedWord.text} 
+                lessonId={lessonId} 
+                onSave={handleWordSaved}
+                onClose={() => setSelectedWord(null)}
+                isSaved={savedWords.has(selectedWord.text.toLowerCase())}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

@@ -153,32 +153,32 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="min-h-screen bg-background py-4 sm:py-6 md:py-8">
       <BackgroundTexture />
       
-      <div className="max-w-4xl mx-auto px-6 relative z-10">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 pt-14 sm:pt-4 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 text-sm sm:text-base touch-target"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Back
             </Button>
           </div>
-          <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8 text-destructive" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-destructive" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Profile</h1>
-              <p className="text-gray-600 mt-1">Manage your administrator account</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Profile</h1>
+              <p className="text-gray-600 mt-0.5 sm:mt-1 text-sm sm:text-base">Manage your administrator account</p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Profile Information */}
           <div className="lg:col-span-2">
             <Card>
@@ -188,18 +188,18 @@ export default function AdminProfilePage() {
                   Administrator Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6 p-3 sm:p-6">
                 {/* Profile Picture & Basic Info */}
-                <div className="flex items-start gap-6">
-                  <div className="relative group">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                  <div className="relative group shrink-0">
                     {profile.profileImage || imagePreview ? (
                       <img 
                         src={imagePreview || profile.profileImage} 
                         alt={profile.name}
-                        className="h-20 w-20 rounded-full object-cover border-2 border-red-200"
+                        className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-red-200"
                       />
                     ) : (
-                      <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center text-red-700 font-bold text-2xl border-2 border-red-200">
+                      <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-red-100 flex items-center justify-center text-red-700 font-bold text-xl sm:text-2xl border-2 border-red-200">
                         {profile.name?.[0]?.toUpperCase() || "A"}
                       </div>
                     )}
@@ -207,11 +207,11 @@ export default function AdminProfilePage() {
                       <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <Camera className="h-6 w-6 text-white" />
+                        <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 space-y-4">
+                  <div className="flex-1 w-full space-y-3 sm:space-y-4">
                     {editing && (
                       <div className="space-y-2">
                         <Label>Profile Image</Label>

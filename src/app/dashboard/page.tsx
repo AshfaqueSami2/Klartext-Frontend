@@ -10,13 +10,18 @@ import { useAuth } from "@/context/AuthContext";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { IStats, ILesson } from "@/types";
 import LevelSelectionModal from "@/components/dashboard/LevelSelectionModal";
+import { motion } from "framer-motion";
 
 // UI Components
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, Flame, Trophy, Lock, ArrowRight, Star } from "lucide-react";
+import { 
+  BookOpen, Flame, Trophy, Lock, ArrowRight, Star, 
+  Sparkles,Target, Zap, ChevronRight, 
+  BookMarked, GraduationCap, Crown, Play
+} from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -32,6 +37,13 @@ const stripHtmlTags = (html: string): string => {
 
 // Free vs Premium levels
 const PREMIUM_LEVELS = ["B1", "B2", "C1", "C2"];
+
+// Helper function to get next level
+const getNextLevel = (currentLevel: string): string => {
+  const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+  const currentIndex = levels.indexOf(currentLevel);
+  return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : "C2";
+};
 
 // Utility functions
 const getOnboardingKey = (userId?: string, email?: string) =>
@@ -196,7 +208,7 @@ function DashboardContent() {
         <link rel="canonical" href="/dashboard" />
       </Head>
 
-      <main className="min-h-screen bg-background text-foreground">
+      <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 text-foreground">
         {/* Level Selection Modal */}
         {showOnboarding && (
           <LevelSelectionModal
@@ -205,251 +217,405 @@ function DashboardContent() {
           />
         )}
 
-        {/* Main Dashboard Layout */}
-        <div className="relative overflow-hidden">
-          {/* Futuristic Background Elements */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 pointer-events-none"></div>
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700 pointer-events-none"></div>
+        {/* Animated Background Elements */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <motion.div 
+            className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+          />
+          <motion.div 
+            className="absolute top-1/2 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+            transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+          />
+          <motion.div 
+            className="absolute -bottom-40 right-1/3 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ repeat: Infinity, duration: 12, ease: "easeInOut" }}
+          />
+        </div>
+
+        {/* Main Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pt-16 md:pt-8 space-y-6 sm:space-y-8">
           
-          {/* Main Content */}
-          <div className="relative space-y-8 p-6 max-w-7xl mx-auto">
-            {/* Welcome Header */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-purple-500/10 to-transparent backdrop-blur-sm border border-primary/20 rounded-2xl p-6 shadow-lg">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Willkommen, {user?.name || "Student"}!
-            </h1>
-            <p className="text-muted-foreground mt-2 flex items-center gap-2">
-              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              You are currently at{" "}
-              <span className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full font-bold text-primary">
-                Level {stats?.currentLevel || "A1"}
-              </span>
-            </p>
-          </div>
-
-          {/* Progress Pills */}
-          <div
-            className="flex gap-3"
-            role="status"
-            aria-label="Learning progress summary"
+          {/* Hero Welcome Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary via-primary/90 to-teal-600 p-6 sm:p-8 shadow-2xl"
           >
-            <div className="relative flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-600/20 backdrop-blur-sm text-orange-100 px-5 py-2.5 rounded-full border border-orange-400/30 text-sm font-bold shadow-lg overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-400/20 to-orange-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              <Flame
-                className="h-5 w-5 fill-orange-400 text-orange-400 drop-shadow-glow"
-                aria-hidden="true"
-              />
-              <span className="relative z-10">{stats?.completedLessons || 0} Lessons</span>
-            </div>
-            <div className="relative flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-amber-600/20 backdrop-blur-sm text-yellow-100 px-5 py-2.5 rounded-full border border-yellow-400/30 text-sm font-bold shadow-lg overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-400/20 to-yellow-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              <Trophy
-                className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-glow"
-                aria-hidden="true"
-              />
-              <span className="relative z-10">{stats?.coins || 0} Coins</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Stats Grid */}
-        <section
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          aria-label="Learning Statistics"
-        >
-          <Card className="relative overflow-hidden border border-primary/20 shadow-xl bg-gradient-to-br from-primary/5 to-transparent backdrop-blur-sm group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Total Words Learned
-              </CardTitle>
-              <div className="p-2 bg-primary/20 rounded-lg border border-primary/30">
-                <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                {stats?.totalWords || 0}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                Keep growing your vocabulary!
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border border-purple-500/20 shadow-xl bg-gradient-to-br from-purple-500/5 to-transparent backdrop-blur-sm group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Level Progress
-              </CardTitle>
-              <span className="text-xs font-bold bg-gradient-to-r from-primary to-purple-600 text-white px-3 py-1.5 rounded-lg shadow-lg border border-primary/30">
-                {stats?.currentLevel || "A1"}
-              </span>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                {progress.toFixed(0)}%
-              </div>
-              <div className="relative mt-3">
-                <Progress
-                  value={progress}
-                  className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner"
-                  aria-label="Learning progress"
-                />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-purple-500/20 to-blue-500/20 blur-sm"></div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <span className="inline-block w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
-                {totalCurrentLevelLessons === 0 
-                  ? `No lessons at ${currentLevel} level yet` 
-                  : `${completedCurrentLevelLessons}/${totalCurrentLevelLessons} lessons completed at ${currentLevel}`
-                }
-              </p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Lessons Section */}
-        <section aria-label="Available German Stories">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              <div className="p-2 bg-gradient-to-br from-primary to-purple-600 rounded-lg shadow-lg">
-                <BookOpen className="h-6 w-6 text-white" aria-hidden="true" />
-              </div>
-              Recommended Stories
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {lessons.length === 0 ? (
-              <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">No lessons available yet.</p>
-              </div>
-            ) : (
-              lessons.map((lesson) => {
-                const isPremiumLevel = PREMIUM_LEVELS.includes(lesson.difficulty);
-                const hasPremiumAccess = subscription?.isPremium || false;
+            {/* Decorative Elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl" />
+            
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex-1">
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center gap-3 mb-3"
+                >
+                  <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-white/80 font-medium text-sm">Welcome back!</span>
+                </motion.div>
                 
-                // Simple lock logic: Premium levels need subscription
-                const isLocked = isPremiumLevel && !hasPremiumAccess;
+                <motion.h1 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2"
+                >
+                  Guten Tag, {user?.name || "Student"}! 👋
+                </motion.h1>
                 
-                const isRecommended = lesson.difficulty === stats?.currentLevel;
+                <motion.p 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-white/80 text-lg flex items-center gap-2 flex-wrap"
+                >
+                  <span>You're learning at</span>
+                  <span className="font-bold text-white bg-white/20 px-3 py-1 rounded-lg">
+                    Level {stats?.currentLevel || "A1"}
+                  </span>
+                  <span className="hidden sm:inline">• Keep up the great work!</span>
+                </motion.p>
+              </div>
 
-                return (
-                  <Card
-                    key={lesson._id}
-                    className={`relative flex flex-col justify-between transition-all duration-500 border overflow-hidden group ${
-                      isLocked 
-                        ? "bg-muted/50 opacity-60 border-border/50" 
-                        : "bg-card/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 hover:shadow-2xl hover:scale-[1.03]"
-                    }`}
-                  >
-                    {!isLocked && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    )}
-                    {/* Cover Image */}
-                    {lesson.coverImage && (
-                      <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
-                        <Image 
-                          src={lesson.coverImage} 
-                          alt={lesson.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          className="object-cover transition-transform duration-300 hover:scale-105"
-                        />
-                      </div>
-                    )}
-                    
-                    <CardHeader>
-                      <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={`text-xs font-bold px-2 py-1 rounded border ${
-                              isRecommended
-                                ? "bg-green-50 text-green-700 border-green-200"
-                                : isLocked
-                                ? "bg-gray-200 text-gray-600 border-gray-300"
-                                : "bg-blue-50 text-blue-700 border-blue-200"
-                            }`}
-                            aria-label={`Difficulty level ${lesson.difficulty}`}
-                          >
-                            {lesson.difficulty}
-                          </span>
-                          
-                          {lesson.isCompleted && (
-                            <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
-                              ✓ Completed
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          {isLocked && (
-                            <Lock
-                              className="h-4 w-4 text-gray-400"
-                              aria-label="Locked content"
-                            />
-                          )}
-                          {!isLocked && isRecommended && (
-                            <Star
-                              className="h-4 w-4 text-yellow-500 fill-yellow-500"
-                              aria-label="Recommended for you"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <CardTitle className="text-lg font-serif text-card-foreground leading-tight">
-                        {lesson.title}
-                      </CardTitle>
-                    </CardHeader>
+              {/* Quick Stats Pills */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 }}
+                className="flex flex-wrap gap-3"
+              >
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-2xl">
+                  <Flame className="h-5 w-5 text-orange-300" />
+                  <div>
+                    <p className="text-white font-bold text-lg">{stats?.completedLessons || 0}</p>
+                    <p className="text-white/70 text-xs">Lessons</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-2xl">
+                  <Trophy className="h-5 w-5 text-yellow-300" />
+                  <div>
+                    <p className="text-white font-bold text-lg">{stats?.coins || 0}</p>
+                    <p className="text-white/70 text-xs">Coins</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-2xl">
+                  <BookOpen className="h-5 w-5 text-teal-300" />
+                  <div>
+                    <p className="text-white font-bold text-lg">{stats?.totalWords || 0}</p>
+                    <p className="text-white/70 text-xs">Words</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
 
-                    <CardContent className={lesson.coverImage ? "pt-2" : "pt-4"}>
-                      <p className="text-sm text-muted-foreground line-clamp-3 mb-4 font-serif">
-                        {lesson.content
-                          ? `${stripHtmlTags(lesson.content).substring(0, 150)}...`
-                          : "No preview available."}
+          {/* Stats & Progress Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Level Progress Card - Takes 2 columns on large screens */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="lg:col-span-2"
+            >
+              <Card className="relative overflow-hidden border-0 shadow-xl bg-card/80 backdrop-blur-xl h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-transparent" />
+                <CardContent className="relative z-10 p-6">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                        <Target className="h-5 w-5 text-primary" />
+                        Level Progress
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Complete lessons to advance to the next level
                       </p>
+                    </div>
+                    <div className="px-4 py-2 bg-gradient-to-r from-primary to-teal-600 rounded-xl text-white font-bold text-lg shadow-lg">
+                      {stats?.currentLevel || "A1"}
+                    </div>
+                  </div>
 
-                      {isLocked ? (
-                        <Link href="/pricing">
-                          <LiquidButton
-                            variant="outline"
-                            className="w-full text-muted-foreground border-border hover:border-primary hover:text-primary"
-                            aria-label="Unlock with premium subscription"
-                          >
-                            🔒 Unlock with Premium
-                          </LiquidButton>
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/read/${lesson._id}`}
-                          aria-label={`${lesson.isCompleted ? 'Preview' : 'Read'} story: ${lesson.title}`}
-                        >
-                          <LiquidButton className={`w-full shadow-sm ${
-                            lesson.isCompleted 
-                              ? "bg-green-600 hover:bg-green-700 text-white" 
-                              : "bg-primary hover:bg-teal-900 text-white"
-                          }`} variant={lesson.isCompleted ? "success" : "primary"}>
-                            {lesson.isCompleted ? "Preview Lesson" : "Read Story"}{" "}
-                            <ArrowRight
-                              className="ml-2 h-4 w-4"
-                              aria-hidden="true"
-                            />
-                          </LiquidButton>
-                        </Link>
-                      )}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {completedCurrentLevelLessons} of {totalCurrentLevelLessons} lessons completed
+                      </span>
+                      <span className="font-bold text-primary">{progress.toFixed(0)}%</span>
+                    </div>
+                    
+                    <div className="relative">
+                      <Progress 
+                        value={progress} 
+                        className="h-4 bg-muted rounded-full overflow-hidden"
+                      />
+                      <motion.div 
+                        className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 rounded-full"
+                        animate={{ x: ['-100%', '100%'] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-primary" />
+                        <span className="text-sm text-muted-foreground">Current: {stats?.currentLevel || "A1"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Next: {getNextLevel(stats?.currentLevel || "A1")}</span>
+                        <div className="w-3 h-3 rounded-full bg-muted border-2 border-primary" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Quick Actions Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="relative overflow-hidden border-0 shadow-xl bg-card/80 backdrop-blur-xl h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-primary/5" />
+                <CardContent className="relative z-10 p-6">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-4">
+                    <Zap className="h-5 w-5 text-yellow-500" />
+                    Quick Actions
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <Link href="/lessons" className="block">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 transition-all group cursor-pointer">
+                        <div className="p-2 bg-primary rounded-lg text-white">
+                          <BookOpen className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground text-sm">Browse Library</p>
+                          <p className="text-xs text-muted-foreground">Explore all stories</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+
+                    <Link href="/myVocabulary" className="block">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-teal-500/10 to-teal-500/5 hover:from-teal-500/20 hover:to-teal-500/10 transition-all group cursor-pointer">
+                        <div className="p-2 bg-teal-600 rounded-lg text-white">
+                          <BookMarked className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground text-sm">My Vocabulary</p>
+                          <p className="text-xs text-muted-foreground">{stats?.totalWords || 0} words saved</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-teal-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+
+                    <Link href="/grammar" className="block">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-purple-500/5 hover:from-purple-500/20 hover:to-purple-500/10 transition-all group cursor-pointer">
+                        <div className="p-2 bg-purple-600 rounded-lg text-white">
+                          <GraduationCap className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground text-sm">Grammar Practice</p>
+                          <p className="text-xs text-muted-foreground">Improve your skills</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Lessons Section */}
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            aria-label="Available German Stories"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-primary to-teal-600 rounded-xl shadow-lg">
+                  <BookOpen className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                    Recommended Stories
+                  </h2>
+                  <p className="text-sm text-muted-foreground">Stories matched to your level</p>
+                </div>
+              </div>
+              <Link href="/lessons">
+                <LiquidButton variant="outline" className="hidden sm:flex gap-2">
+                  View All <ArrowRight className="h-4 w-4" />
+                </LiquidButton>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {lessons.length === 0 ? (
+                <div className="col-span-full">
+                  <Card className="border-dashed border-2 border-border bg-card/50">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-lg font-medium text-foreground mb-2">No lessons available yet</p>
+                      <p className="text-muted-foreground text-sm">Check back soon for new stories!</p>
                     </CardContent>
                   </Card>
-                );
-              })
-            )}
-          </div>
-        </section>
-          </div>
+                </div>
+              ) : (
+                lessons.map((lesson, index) => {
+                  const isPremiumLevel = PREMIUM_LEVELS.includes(lesson.difficulty);
+                  const hasPremiumAccess = subscription?.isPremium || false;
+                  const isLocked = isPremiumLevel && !hasPremiumAccess;
+                  const isRecommended = lesson.difficulty === stats?.currentLevel;
+
+                  return (
+                    <motion.div
+                      key={lesson._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index, duration: 0.3 }}
+                    >
+                      <Card
+                        className={`relative flex flex-col h-full overflow-hidden border-0 shadow-lg transition-all duration-300 group ${
+                          isLocked 
+                            ? "bg-muted/50 opacity-70" 
+                            : "bg-card/80 backdrop-blur-sm hover:shadow-2xl hover:scale-[1.02]"
+                        }`}
+                      >
+                        {/* Gradient overlay on hover */}
+                        {!isLocked && (
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        )}
+
+                        {/* Cover Image */}
+                        {lesson.coverImage ? (
+                          <div className="relative w-full h-44 overflow-hidden">
+                            <Image 
+                              src={lesson.coverImage} 
+                              alt={lesson.title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                            
+                            {/* Badges */}
+                            <div className="absolute top-3 left-3 flex items-center gap-2">
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-sm ${
+                                isRecommended
+                                  ? "bg-green-500/90 text-white"
+                                  : isLocked
+                                  ? "bg-gray-500/90 text-white"
+                                  : "bg-primary/90 text-white"
+                              }`}>
+                                {lesson.difficulty}
+                              </span>
+                              {lesson.isCompleted && (
+                                <span className="bg-green-500/90 text-white text-xs px-2.5 py-1 rounded-lg backdrop-blur-sm font-medium">
+                                  ✓ Done
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Lock/Recommended indicator */}
+                            <div className="absolute top-3 right-3">
+                              {isLocked ? (
+                                <div className="p-2 bg-black/50 backdrop-blur-sm rounded-lg">
+                                  <Lock className="h-4 w-4 text-white" />
+                                </div>
+                              ) : isRecommended ? (
+                                <div className="p-2 bg-yellow-500/90 backdrop-blur-sm rounded-lg">
+                                  <Star className="h-4 w-4 text-white fill-white" />
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-32 bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+                            <BookOpen className="h-12 w-12 text-primary/50" />
+                            <div className="absolute top-3 left-3 flex items-center gap-2">
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                                isRecommended
+                                  ? "bg-green-500 text-white"
+                                  : isLocked
+                                  ? "bg-gray-500 text-white"
+                                  : "bg-primary text-white"
+                              }`}>
+                                {lesson.difficulty}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        <CardContent className="relative z-10 flex-1 flex flex-col p-4">
+                          <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 leading-tight">
+                            {lesson.title}
+                          </h3>
+                          
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
+                            {lesson.content
+                              ? `${stripHtmlTags(lesson.content).substring(0, 100)}...`
+                              : "No preview available."}
+                          </p>
+
+                          {isLocked ? (
+                            <Link href="/pricing" className="mt-auto">
+                              <LiquidButton
+                                variant="outline"
+                                className="w-full border-primary/30 text-primary hover:bg-primary/10"
+                              >
+                                <Crown className="h-4 w-4 mr-2" />
+                                Unlock Premium
+                              </LiquidButton>
+                            </Link>
+                          ) : (
+                            <Link href={`/read/${lesson._id}`} className="mt-auto">
+                              <LiquidButton 
+                                className={`w-full shadow-lg ${
+                                  lesson.isCompleted 
+                                    ? "bg-green-600 hover:bg-green-700" 
+                                    : "bg-gradient-to-r from-primary to-teal-600 hover:from-primary/90 hover:to-teal-600/90"
+                                } text-white`}
+                              >
+                                <Play className="h-4 w-4 mr-2" />
+                                {lesson.isCompleted ? "Review" : "Start Reading"}
+                              </LiquidButton>
+                            </Link>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Mobile View All Button */}
+            <div className="mt-6 sm:hidden">
+              <Link href="/lessons">
+                <LiquidButton variant="outline" className="w-full gap-2">
+                  View All Stories <ArrowRight className="h-4 w-4" />
+                </LiquidButton>
+              </Link>
+            </div>
+          </motion.section>
         </div>
       </main>
     </>

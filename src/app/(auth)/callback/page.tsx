@@ -48,13 +48,16 @@ function CallbackContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+      <div className="text-center space-y-4 max-w-md px-4">
+        <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
         <h2 className="text-xl font-semibold text-foreground mb-2">
           Completing your sign-in...
         </h2>
         <p className="text-muted-foreground">
-          Please wait while we redirect you to your dashboard.
+          Please wait while we connect to the server.
+        </p>
+        <p className="text-sm text-muted-foreground/70">
+          This may take up to 30 seconds if the server is waking up.
         </p>
       </div>
     </div>

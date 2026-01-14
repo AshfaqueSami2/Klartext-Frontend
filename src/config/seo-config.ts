@@ -5,9 +5,9 @@
 
 export const siteConfig = {
   name: "KlarText",
-  url: "https://klartext.com",
+  url: "https://www.klartext.tech",
   description: "Master German through comprehensible input with KlarText. Interactive German lessons, vocabulary building, live voice rooms, and personalized learning. Perfect for A1-C1 learners.",
-  ogImage: "/logo/main logo.png",
+  ogImage: "/logo/logo final 1.png",
   links: {
     twitter: "https://twitter.com/klartext",
     facebook: "https://facebook.com/klartext",
@@ -66,7 +66,7 @@ export const structuredData = {
   name: "KlarText",
   description: siteConfig.description,
   url: siteConfig.url,
-  logo: `${siteConfig.url}/logo/main logo.png`,
+  logo: `${siteConfig.url}/logo/logo final 1.png`,
   sameAs: [
     siteConfig.links.twitter,
     siteConfig.links.facebook,
@@ -165,7 +165,7 @@ export const articleStructuredData = (article: {
     name: "KlarText",
     logo: {
       "@type": "ImageObject",
-      url: `${siteConfig.url}/logo/main logo.png`,
+      url: `${siteConfig.url}/logo/logo final 1.png`,
     },
   },
   mainEntityOfPage: {

@@ -19,7 +19,7 @@ const notoSerif = Noto_Serif({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://klartext.com'),
+  metadataBase: new URL('https://www.klartext.tech'),
   title: {
     default: "KlarText - Learn German Through Reading | German Language Learning Platform",
     template: "%s | KlarText"
@@ -70,13 +70,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://klartext.com",
+    url: "https://www.klartext.tech",
     siteName: "KlarText",
     title: "KlarText - Learn German Through Reading | German Language Learning Platform",
     description: "Master German through comprehensible input with KlarText. Interactive German lessons, vocabulary building, live voice rooms, and personalized learning. Perfect for A1-C1 learners.",
     images: [
       {
-        url: "/logo/main logo.png",
+        url: "/logo/logo final 1.png",
         width: 1200,
         height: 630,
         alt: "KlarText - German Language Learning Platform",
@@ -87,11 +87,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KlarText - Learn German Through Reading",
     description: "Master German through comprehensible input. Interactive lessons, vocabulary building, and live practice.",
-    images: ["/logo/main logo.png"],
+    images: ["/logo/logo final 1.png"],
     creator: "@klartext",
   },
   alternates: {
-    canonical: "https://klartext.com",
+    canonical: "https://www.klartext.tech",
   },
   category: "Education",
 };

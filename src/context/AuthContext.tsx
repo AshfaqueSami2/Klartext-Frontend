@@ -13,6 +13,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, skipToast?: boolean) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -23,6 +24,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  // Helper function to fetch full user profile
+  const fetchUserProfile = async () => {
+    try {
+      const response = await api.get("/user/me");
+      if (response.data.success && response.data.data) {
+        const profileData = response.data.data;
+        setUser(prev => prev ? {
+          ...prev,
+          name: profileData.name || prev.name,
+          email: profileData.email || prev.email,
+          profileImage: profileData.profileImage,
+        } : null);
+      }
+    } catch (error) {
+      // Profile fetch failed, keep using basic info
+      console.log("Could not fetch full profile");
+    }
+  };
 
   // 3. Check for Token on Page Load (The "Persist" Logic)
   useEffect(() => {
@@ -40,15 +60,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             handleLogout();
           } else {
             // B. Token is valid, set basic user info
-            // (Optional: You could call API here to get latest profile image/coins)
             setUser({
               _id: decoded.userId,
-              email: "", // Token usually doesn't have email/name unless you put it there
+              email: "",
               role: decoded.role,
-              name: "User", // Placeholder until you fetch profile
+              name: "User",
             });
             
-            // C. Redirect to appropriate dashboard if on login/register page
+            // C. Fetch full profile with profileImage
+            await fetchUserProfile();
+            
+            // D. Redirect to appropriate dashboard if on login/register page
             const currentPath = window.location.pathname;
             if (currentPath === '/login' || currentPath === '/register') {
               if (decoded.role === 'admin') {
@@ -57,9 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 router.push("/dashboard");
               }
             }
-            
-            // D. (Optional) Fetch full profile
-            // await fetchUserProfile(decoded.userId); 
           }
         } catch (error) {
           handleLogout();
@@ -72,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // 4. Login Function (Called by Login Page after success)
-  const login = (token: string, skipToast = false) => {
+  const login = async (token: string, skipToast = false) => {
     localStorage.setItem("accessToken", token);
     
     try {
@@ -83,6 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: "User", 
           email: "",
         });
+        
+        // Fetch full profile with profileImage
+        await fetchUserProfile();
         
         if (!skipToast) {
           toast.success("Welcome back!");
@@ -135,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser: fetchUserProfile, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
