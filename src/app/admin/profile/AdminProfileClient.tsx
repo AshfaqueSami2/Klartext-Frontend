@@ -14,6 +14,7 @@ import { PageLoader } from "@/components/ui/spinner";
 import { PageNotFoundState } from "@/components/ui/page-states";
 import { BackgroundTexture } from "@/components/ui/background-texture";
 import { Textarea } from "@/components/ui/textarea";
+import PasswordChangeModal from "@/components/shared/PasswordChangeModal";
 import { 
   User, 
   Mail, 
@@ -28,7 +29,8 @@ import {
   ArrowLeft,
   Camera,
   Upload,
-  X
+  X,
+  KeyRound
 } from "lucide-react";
 
 interface UserProfile {
@@ -40,6 +42,7 @@ interface UserProfile {
   updatedAt: string;
   profileImage?: string;
   bio?: string;
+  authProvider?: 'local' | 'google';
 }
 
 export default function AdminProfilePage() {
@@ -53,6 +56,7 @@ export default function AdminProfilePage() {
   const [bio, setBio] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -397,6 +401,14 @@ export default function AdminProfilePage() {
                   <Users className="h-4 w-4" />
                   Manage Users
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2"
+                  onClick={() => setShowPasswordModal(true)}
+                >
+                  <KeyRound className="h-4 w-4" />
+                  {profile.authProvider === 'google' ? 'Set Password' : 'Change Password'}
+                </Button>
               </CardContent>
             </Card>
 
@@ -422,6 +434,13 @@ export default function AdminProfilePage() {
             </Card>
           </div>
         </div>
+
+        {/* Password Change Modal */}
+        <PasswordChangeModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          isGoogleUser={profile.authProvider === 'google'}
+        />
       </div>
     </div>
   );

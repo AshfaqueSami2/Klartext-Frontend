@@ -28,10 +28,29 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-// Floating particles component
+// Fixed particle positions to avoid hydration mismatch
+const PARTICLE_POSITIONS = [
+  { left: 15, top: 20, duration: 5, delay: 0 },
+  { left: 85, top: 15, duration: 6, delay: 1 },
+  { left: 25, top: 80, duration: 4.5, delay: 0.5 },
+  { left: 70, top: 60, duration: 5.5, delay: 2 },
+  { left: 40, top: 35, duration: 4, delay: 1.5 },
+  { left: 55, top: 75, duration: 6.5, delay: 0.3 },
+  { left: 10, top: 50, duration: 5, delay: 2.5 },
+  { left: 90, top: 40, duration: 4.8, delay: 1.2 },
+  { left: 35, top: 10, duration: 5.2, delay: 0.8 },
+  { left: 60, top: 90, duration: 4.3, delay: 1.8 },
+  { left: 20, top: 45, duration: 5.8, delay: 0.2 },
+  { left: 75, top: 25, duration: 4.6, delay: 2.2 },
+  { left: 45, top: 55, duration: 5.3, delay: 1.1 },
+  { left: 80, top: 85, duration: 4.9, delay: 0.7 },
+  { left: 30, top: 65, duration: 5.7, delay: 1.6 },
+];
+
+// Floating particles component with fixed positions
 const FloatingParticles = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(15)].map((_, i) => (
+    {PARTICLE_POSITIONS.map((particle, i) => (
       <motion.div
         key={i}
         className="absolute w-1 h-1 sm:w-2 sm:h-2 bg-white/20 rounded-full"
@@ -41,14 +60,14 @@ const FloatingParticles = () => (
           scale: [1, 1.2, 1],
         }}
         transition={{
-          duration: 4 + Math.random() * 3,
+          duration: particle.duration,
           repeat: Infinity,
           repeatType: "reverse",
-          delay: Math.random() * 3,
+          delay: particle.delay,
         }}
         style={{
-          left: `${5 + Math.random() * 90}%`,
-          top: `${5 + Math.random() * 90}%`,
+          left: `${particle.left}%`,
+          top: `${particle.top}%`,
         }}
       />
     ))}
@@ -432,17 +451,6 @@ export default function RegisterPage() {
           </div>
         </motion.div>
       </div>
-
-      <style jsx global>{`
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .animate-gradient {
-          animation: gradient 3s ease infinite;
-        }
-      `}</style>
     </div>
   );
 }

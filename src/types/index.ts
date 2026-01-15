@@ -4,6 +4,8 @@ export interface IUser {
   email: string;
   role: 'student' | 'admin';
   profileImage?: string;
+  authProvider?: 'local' | 'google';
+  needsPasswordChange?: boolean;
 }
 
 // ✅ NEW: Stats from your Analytics Endpoint

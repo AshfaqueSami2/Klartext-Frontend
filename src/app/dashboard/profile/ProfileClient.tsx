@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { getLevelColor } from "@/lib/level-utils";
+import PasswordChangeModal from "@/components/shared/PasswordChangeModal";
 import { 
   User, 
   Mail, 
@@ -35,7 +36,8 @@ import {
   TrendingUp,
   Zap,
   GraduationCap,
-  CheckCircle
+  CheckCircle,
+  Shield
 } from "lucide-react";
 
 interface UserProfile {
@@ -52,6 +54,7 @@ interface UserProfile {
   profileImage?: string;
   bio?: string;
   wordsLearned?: number;
+  authProvider?: 'local' | 'google';
 }
 
 interface DashboardStats {
@@ -79,6 +82,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -508,7 +512,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-8">
                 <Button 
                   variant="outline" 
                   className="w-full justify-start gap-2 h-auto py-4"
@@ -548,10 +552,34 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground">See rankings</p>
                   </div>
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2 h-auto py-4"
+                  onClick={() => setShowPasswordModal(true)}
+                >
+                  <div className="p-2 rounded-lg bg-red-500/10">
+                    <Shield className="w-4 h-4 text-red-500" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium">
+                      {profile.authProvider === 'google' ? 'Set Password' : 'Change Password'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {profile.authProvider === 'google' ? 'Add login option' : 'Update security'}
+                    </p>
+                  </div>
+                </Button>
               </div>
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Password Change Modal */}
+        <PasswordChangeModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          isGoogleUser={profile.authProvider === 'google'}
+        />
       </div>
     </div>
   );

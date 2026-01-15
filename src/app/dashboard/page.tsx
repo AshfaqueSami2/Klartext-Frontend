@@ -10,19 +10,41 @@ import { useAuth } from "@/context/AuthContext";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { IStats, ILesson } from "@/types";
 import LevelSelectionModal from "@/components/dashboard/LevelSelectionModal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // UI Components
 import { Card, CardContent } from "@/components/ui/card";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   BookOpen, Flame, Trophy, Lock, ArrowRight, Star, 
-  Sparkles,Target, Zap, ChevronRight, 
-  BookMarked, GraduationCap, Crown, Play
+  Sparkles, Target, Zap, ChevronRight, 
+  BookMarked, GraduationCap, Crown, Play, Medal, TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
+
+// Streak and Leaderboard Types
+interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastActivityDate: string | null;
+  totalActiveDays: number;
+  isActiveToday: boolean;
+}
+
+interface LeaderboardUser {
+  rank: number;
+  user: {
+    _id: string;
+    name: string;
+    profileImage?: string;
+  };
+  currentStreak: number;
+  longestStreak: number;
+  totalActiveDays: number;
+}
 
 
 
@@ -80,8 +102,47 @@ function DashboardContent() {
 
   const [stats, setStats] = useState<IStats | null>(null);
   const [lessons, setLessons] = useState<ILesson[]>([]);
+  const [displayedLessons, setDisplayedLessons] = useState<ILesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [streakData, setStreakData] = useState<StreakData | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+
+  // Function to get 3 random stories
+  const getRandomStories = useCallback((allLessons: ILesson[]) => {
+    if (allLessons.length <= 3) return allLessons;
+    const shuffled = [...allLessons].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3);
+  }, []);
+
+  // Shuffle stories handler
+  const handleShuffleStories = useCallback(() => {
+    setDisplayedLessons(getRandomStories(lessons));
+  }, [lessons, getRandomStories]);
+
+  // Fetch streak data
+  const fetchStreakData = useCallback(async () => {
+    try {
+      const response = await api.get("/streak/my-streak");
+      if (response.data.success) {
+        setStreakData(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch streak data:", error);
+    }
+  }, []);
+
+  // Fetch leaderboard
+  const fetchLeaderboard = useCallback(async () => {
+    try {
+      const response = await api.get("/streak/leaderboard?limit=10");
+      if (response.data.success) {
+        setLeaderboard(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch leaderboard:", error);
+    }
+  }, []);
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async () => {
@@ -143,7 +204,11 @@ function DashboardContent() {
         }));
 
         setStats(statsData);
-        setLessons(enrichedLessons);      // Show modal for new users without a selected level
+        setLessons(enrichedLessons);
+        // Set initial random 3 stories
+        const shuffled = [...enrichedLessons].sort(() => Math.random() - 0.5);
+        setDisplayedLessons(shuffled.slice(0, 3));
+        // Show modal for new users without a selected level
       const isNewUser = !statsData.currentLevel;
       if (!hasCompletedOnboarding && (hasUrlFlag || isNewUser)) {
         setShowOnboarding(true);
@@ -162,7 +227,9 @@ function DashboardContent() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [fetchDashboardData]);
+    fetchStreakData();
+    fetchLeaderboard();
+  }, [fetchDashboardData, fetchStreakData, fetchLeaderboard]);
 
   // Handle onboarding completion
   const handleOnboardingComplete = useCallback(() => {
@@ -294,11 +361,24 @@ function DashboardContent() {
                 transition={{ delay: 0.5 }}
                 className="flex flex-wrap gap-3"
               >
-                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-2xl">
-                  <Flame className="h-5 w-5 text-orange-300" />
+                {/* Streak Pill with Fire Animation */}
+                <div className={`flex items-center gap-2 backdrop-blur-sm px-4 py-3 rounded-2xl ${
+                  streakData?.isActiveToday 
+                    ? 'bg-gradient-to-r from-orange-500/30 to-red-500/30 ring-2 ring-orange-400/50' 
+                    : 'bg-white/20'
+                }`}>
+                  <motion.div
+                    animate={streakData?.isActiveToday ? { 
+                      scale: [1, 1.2, 1],
+                      rotate: [-5, 5, -5]
+                    } : {}}
+                    transition={{ repeat: Infinity, duration: 0.8 }}
+                  >
+                    <Flame className={`h-5 w-5 ${streakData?.isActiveToday ? 'text-orange-400' : 'text-orange-300'}`} />
+                  </motion.div>
                   <div>
-                    <p className="text-white font-bold text-lg">{stats?.completedLessons || 0}</p>
-                    <p className="text-white/70 text-xs">Lessons</p>
+                    <p className="text-white font-bold text-lg">{streakData?.currentStreak || 0}</p>
+                    <p className="text-white/70 text-xs">Day Streak</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-2xl">
@@ -440,6 +520,177 @@ function DashboardContent() {
             </motion.div>
           </div>
 
+          {/* Streak & Leaderboard Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Streak Stats Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <Card className="relative overflow-hidden border-0 shadow-xl bg-card/80 backdrop-blur-xl h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent" />
+                <CardContent className="relative z-10 p-6">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-4">
+                    <motion.div
+                      animate={{ scale: [1, 1.15, 1] }}
+                      transition={{ repeat: Infinity, duration: 1.5 }}
+                    >
+                      <Flame className="h-5 w-5 text-orange-500" />
+                    </motion.div>
+                    Your Streak
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {/* Current Streak - Large Display */}
+                    <div className="text-center py-4">
+                      <motion.div 
+                        className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent"
+                        animate={streakData?.isActiveToday ? { scale: [1, 1.05, 1] } : {}}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                      >
+                        {streakData?.currentStreak || 0}
+                      </motion.div>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        {streakData?.isActiveToday ? (
+                          <span className="text-green-500 flex items-center justify-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            Active Today!
+                          </span>
+                        ) : (
+                          "Days in a Row"
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-muted/50 rounded-xl p-3 text-center">
+                        <Trophy className="h-4 w-4 text-yellow-500 mx-auto mb-1" />
+                        <p className="text-lg font-bold text-foreground">{streakData?.longestStreak || 0}</p>
+                        <p className="text-xs text-muted-foreground">Best Streak</p>
+                      </div>
+                      <div className="bg-muted/50 rounded-xl p-3 text-center">
+                        <TrendingUp className="h-4 w-4 text-teal-500 mx-auto mb-1" />
+                        <p className="text-lg font-bold text-foreground">{streakData?.totalActiveDays || 0}</p>
+                        <p className="text-xs text-muted-foreground">Total Days</p>
+                      </div>
+                    </div>
+
+                    {/* Motivation Message */}
+                    {!streakData?.isActiveToday && (
+                      <div className="bg-orange-500/10 rounded-xl p-3 text-center">
+                        <p className="text-sm text-orange-600 dark:text-orange-400">
+                          Complete a lesson today to keep your streak! 🔥
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Leaderboard Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="lg:col-span-2"
+            >
+              <Card className="relative overflow-hidden border-0 shadow-xl bg-card/80 backdrop-blur-xl h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-purple-500/5" />
+                <CardContent className="relative z-10 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                      <Medal className="h-5 w-5 text-yellow-500" />
+                      Streak Leaderboard
+                    </h3>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                      Top 10
+                    </span>
+                  </div>
+                  
+                  {leaderboard.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Trophy className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-muted-foreground text-sm">No streak data yet</p>
+                      <p className="text-muted-foreground/70 text-xs">Complete lessons to appear here!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                      <AnimatePresence>
+                        {leaderboard.map((entry, index) => {
+                          const isCurrentUser = entry.user._id === user?._id;
+                          const rankColors: Record<number, string> = {
+                            1: 'from-yellow-500 to-amber-500',
+                            2: 'from-gray-400 to-gray-500',
+                            3: 'from-orange-600 to-orange-700'
+                          };
+                          const rankBg = rankColors[entry.rank] || 'from-primary/20 to-primary/10';
+                          
+                          return (
+                            <motion.div
+                              key={entry.user._id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                                isCurrentUser 
+                                  ? 'bg-primary/10 ring-2 ring-primary/30' 
+                                  : 'bg-muted/30 hover:bg-muted/50'
+                              }`}
+                            >
+                              {/* Rank */}
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
+                                entry.rank <= 3 
+                                  ? `bg-gradient-to-br ${rankBg} text-white` 
+                                  : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {entry.rank <= 3 ? (
+                                  entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : '🥉'
+                                ) : (
+                                  entry.rank
+                                )}
+                              </div>
+
+                              {/* Avatar */}
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={entry.user.profileImage} alt={entry.user.name} />
+                                <AvatarFallback className="text-xs bg-primary/20 text-primary">
+                                  {entry.user.name?.charAt(0)?.toUpperCase() || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+
+                              {/* Name */}
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-medium text-sm truncate ${
+                                  isCurrentUser ? 'text-primary' : 'text-foreground'
+                                }`}>
+                                  {isCurrentUser ? 'You' : entry.user.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {entry.totalActiveDays} total days
+                                </p>
+                              </div>
+
+                              {/* Streak Count */}
+                              <div className="flex items-center gap-1 bg-orange-500/10 px-3 py-1.5 rounded-lg">
+                                <Flame className="h-4 w-4 text-orange-500" />
+                                <span className="font-bold text-orange-600 dark:text-orange-400">
+                                  {entry.currentStreak}
+                                </span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
           {/* Lessons Section */}
           <motion.section 
             initial={{ opacity: 0, y: 20 }}
@@ -459,15 +710,24 @@ function DashboardContent() {
                   <p className="text-sm text-muted-foreground">Stories matched to your level</p>
                 </div>
               </div>
-              <Link href="/lessons">
-                <LiquidButton variant="outline" className="hidden sm:flex gap-2">
-                  View All <ArrowRight className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <LiquidButton 
+                  variant="outline" 
+                  className="hidden sm:flex gap-2"
+                  onClick={handleShuffleStories}
+                >
+                  <Sparkles className="h-4 w-4" /> Shuffle
                 </LiquidButton>
-              </Link>
+                <Link href="/lessons">
+                  <LiquidButton variant="outline" className="hidden sm:flex gap-2">
+                    View All <ArrowRight className="h-4 w-4" />
+                  </LiquidButton>
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {lessons.length === 0 ? (
+              {displayedLessons.length === 0 ? (
                 <div className="col-span-full">
                   <Card className="border-dashed border-2 border-border bg-card/50">
                     <CardContent className="flex flex-col items-center justify-center py-12">
@@ -478,7 +738,7 @@ function DashboardContent() {
                   </Card>
                 </div>
               ) : (
-                lessons.map((lesson, index) => {
+                displayedLessons.map((lesson, index) => {
                   const isPremiumLevel = PREMIUM_LEVELS.includes(lesson.difficulty);
                   const hasPremiumAccess = subscription?.isPremium || false;
                   const isLocked = isPremiumLevel && !hasPremiumAccess;
@@ -608,7 +868,14 @@ function DashboardContent() {
             </div>
 
             {/* Mobile View All Button */}
-            <div className="mt-6 sm:hidden">
+            <div className="mt-6 sm:hidden flex flex-col gap-2">
+              <LiquidButton 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={handleShuffleStories}
+              >
+                <Sparkles className="h-4 w-4" /> Shuffle Stories
+              </LiquidButton>
               <Link href="/lessons">
                 <LiquidButton variant="outline" className="w-full gap-2">
                   View All Stories <ArrowRight className="h-4 w-4" />

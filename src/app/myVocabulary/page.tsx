@@ -8,7 +8,7 @@ import AudioPlayer from "@/components/ui/AudioPlayer";
 import { 
   Search, Book, ArrowLeft, Layers, 
   Calendar, LayoutGrid, List,
-  Clock, Flame, Trophy, BookOpen, ChevronRight, Zap
+  Clock, Flame, Trophy, BookOpen, ChevronRight, Zap, Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -55,6 +55,20 @@ export default function MyVocabularyPage() {
     };
     fetchVocab();
   }, []);
+
+  // Delete vocabulary item
+  const handleDelete = async (vocabId: string, wordName: string) => {
+    try {
+      const response = await api.delete(`/vocab/${vocabId}`);
+      if (response.data.success) {
+        setVocabList(prev => prev.filter(item => item._id !== vocabId));
+        setFilteredList(prev => prev.filter(item => item._id !== vocabId));
+        toast.success(`"${wordName}" removed from your vocabulary`);
+      }
+    } catch (error) {
+      toast.error("Failed to delete word. Please try again.");
+    }
+  };
 
   // Dynamic stats based on actual data
   const stats = useMemo(() => {
@@ -357,6 +371,7 @@ export default function MyVocabularyPage() {
                   key={item._id} 
                   item={item} 
                   index={index}
+                  onDelete={handleDelete}
                 />
               ))}
             </AnimatePresence>
@@ -370,6 +385,7 @@ export default function MyVocabularyPage() {
                   key={item._id} 
                   item={item} 
                   index={index}
+                  onDelete={handleDelete}
                 />
               ))}
             </AnimatePresence>
@@ -395,8 +411,25 @@ export default function MyVocabularyPage() {
 }
 
 // --- Sub-Component: Beautiful 3D Flip Flashcard ---
-function Flashcard({ item, index }: { item: IVocabItem, index: number }) {
+function Flashcard({ item, index, onDelete }: { item: IVocabItem, index: number, onDelete: (id: string, word: string) => void }) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(item._id, item.word);
+    setShowDeleteConfirm(false);
+  };
+
+  const cancelDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(false);
+  };
 
   return (
     <motion.div
@@ -406,7 +439,7 @@ function Flashcard({ item, index }: { item: IVocabItem, index: number }) {
       exit={{ opacity: 0, scale: 0.8, y: -20 }}
       transition={{ duration: 0.4, delay: index * 0.03, type: "spring", stiffness: 100 }}
       className="h-56 sm:h-64 w-full perspective-1000 cursor-pointer group"
-      onClick={() => setIsFlipped(!isFlipped)}
+      onClick={() => !showDeleteConfirm && setIsFlipped(!isFlipped)}
     >
       <motion.div
         className="relative w-full h-full rounded-2xl"
@@ -419,6 +452,45 @@ function Flashcard({ item, index }: { item: IVocabItem, index: number }) {
           className="absolute inset-0 w-full h-full bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 flex flex-col items-center justify-center border border-border/50 shadow-lg group-hover:shadow-xl transition-shadow duration-300"
           style={{ backfaceVisibility: "hidden" }}
         >
+          {/* Delete Button */}
+          <button
+            onClick={handleDeleteClick}
+            className="absolute top-3 right-3 p-2 rounded-lg bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all z-10"
+            title="Delete word"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+
+          {/* Delete Confirmation Overlay */}
+          <AnimatePresence>
+            {showDeleteConfirm && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-background/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-20 p-4"
+              >
+                <Trash2 className="h-8 w-8 text-red-500 mb-3" />
+                <p className="text-foreground font-medium text-center mb-1">Delete "{item.word}"?</p>
+                <p className="text-muted-foreground text-xs mb-4">This cannot be undone</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={cancelDelete}
+                    className="px-4 py-2 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 text-sm font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 text-sm font-medium transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Decorative gradient corner */}
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-bl-full" />
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-teal-500/10 to-transparent rounded-tr-full" />
@@ -500,8 +572,9 @@ function Flashcard({ item, index }: { item: IVocabItem, index: number }) {
 }
 
 // --- Sub-Component: List Item View ---
-function ListItem({ item, index }: { item: IVocabItem, index: number }) {
+function ListItem({ item, index, onDelete }: { item: IVocabItem, index: number, onDelete: (id: string, word: string) => void }) {
   const [showMeaning, setShowMeaning] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
     <motion.div
@@ -510,8 +583,44 @@ function ListItem({ item, index }: { item: IVocabItem, index: number }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3, delay: index * 0.02 }}
-      className="group bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+      className="group bg-card/80 backdrop-blur-xl rounded-2xl border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden relative"
     >
+      {/* Delete Confirmation Overlay */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center z-20 p-4"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-red-500" />
+                <p className="text-foreground font-medium">Delete "{item.word}"?</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-3 py-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onDelete(item._id, item.word);
+                    setShowDeleteConfirm(false);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 text-sm font-medium transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-center gap-4 p-4 sm:p-5">
         {/* Word Number */}
         <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -568,6 +677,15 @@ function ListItem({ item, index }: { item: IVocabItem, index: number }) {
               <Book className="h-4 w-4" />
             </Link>
           )}
+
+          {/* Delete Button */}
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 rounded-xl bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition-all"
+            title="Delete word"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
 

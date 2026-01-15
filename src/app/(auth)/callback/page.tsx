@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import PasswordChangeModal from "@/components/shared/PasswordChangeModal";
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -18,6 +21,7 @@ function CallbackContent() {
         const token = searchParams.get("token");
         const error = searchParams.get("error");
         const message = searchParams.get("message");
+        const needsPasswordChange = searchParams.get("needsPasswordChange") === "true";
 
         if (error) {
           toast.error(decodeURIComponent(error));
@@ -26,11 +30,19 @@ function CallbackContent() {
         }
 
         if (token) {
-          // Decode the token to check user role and redirect appropriately
-          login(token, true); // Skip the default toast
-          
-          if (message) {
-            toast.success(decodeURIComponent(message));
+          // Store token temporarily if user needs to set password
+          if (needsPasswordChange) {
+            setPendingToken(token);
+            login(token, true); // Login first so API calls work
+            setShowPasswordModal(true);
+            toast.info("Please set a password for your account", { duration: 5000 });
+          } else {
+            // Decode the token to check user role and redirect appropriately
+            login(token, true); // Skip the default toast
+            
+            if (message) {
+              toast.success(decodeURIComponent(message));
+            }
           }
         } else {
           toast.error("Authentication failed. No token received.");
@@ -46,6 +58,18 @@ function CallbackContent() {
     handleCallback();
   }, [searchParams, login, router]);
 
+  const handlePasswordSetComplete = () => {
+    setShowPasswordModal(false);
+    toast.success("Password set successfully! You can now login with email too.");
+    router.push("/dashboard");
+  };
+
+  const handlePasswordModalClose = () => {
+    setShowPasswordModal(false);
+    toast.info("You can set a password later from your profile settings.");
+    router.push("/dashboard");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4 max-w-md px-4">
@@ -60,6 +84,14 @@ function CallbackContent() {
           This may take up to 30 seconds if the server is waking up.
         </p>
       </div>
+
+      {/* Password Set Modal for Google Users */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={handlePasswordModalClose}
+        isGoogleUser={true}
+        onSuccess={handlePasswordSetComplete}
+      />
     </div>
   );
 }
