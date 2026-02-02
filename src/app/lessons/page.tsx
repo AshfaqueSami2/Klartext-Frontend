@@ -665,6 +665,22 @@ export default function AllLessonsPage() {
             </AnimatePresence>
           </motion.div>
         )}
+
+        {/* Footer with Internal Links */}
+        <div className="mt-16 pt-8 border-t border-border/30">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="hover:text-foreground transition-colors">
+                Home
+              </Link>
+              <span>•</span>
+              <Link href="/pricing" className="hover:text-foreground transition-colors">
+                Upgrade to Premium
+              </Link>
+            </div>
+            <p>© 2024 KlarText. Learn German through reading.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

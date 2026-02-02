@@ -296,6 +296,22 @@ export default function PricingPage() {
           </Card>
         </div>
       )}
+
+      {/* Footer with Internal Links */}
+      <div className="mt-16 pt-8 border-t">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <a href="/" className="hover:text-foreground transition-colors">
+              Home
+            </a>
+            <span>•</span>
+            <a href="/lessons" className="hover:text-foreground transition-colors">
+              Explore Lessons
+            </a>
+          </div>
+          <p>© 2024 KlarText. Learn German through reading.</p>
+        </div>
+      </div>
     </div>
   );
 }

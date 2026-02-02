@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
@@ -262,10 +263,13 @@ export default function Home() {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
-              <img
+              <Image
                 src="/logo/logo final 1.png"
-                alt="KlarText Logo"
+                alt="KlarText - German Language Learning Platform"
+                width={200}
+                height={80}
                 className="h-14 sm:h-16 md:h-20 w-auto object-contain"
+                priority
               />
             </motion.div>
           </Link>
@@ -702,9 +706,11 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="md:col-span-2">
-              <img
+              <Image
                 src="/logo/logo final 1.png"
-                alt="KlarText Logo"
+                alt="KlarText - German Language Learning"
+                width={200}
+                height={80}
                 className="h-16 sm:h-20 w-auto object-contain mb-4"
               />
               <p className="text-gray-400 text-sm max-w-md">
