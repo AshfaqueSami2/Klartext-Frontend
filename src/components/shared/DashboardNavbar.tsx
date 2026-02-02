@@ -81,7 +81,7 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
             />
           </Link>
 
-          <div className="min-w-0 ml-10 md:ml-0">
+          <div className="min-w-0 ml-12 md:ml-0">
             <h1 className="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text truncate">
               {getPageTitle()}
             </h1>
@@ -142,9 +142,7 @@ export default function DashboardNavbar({ title, showSearch = false }: Dashboard
           </Button>
 
           {/* Theme Toggle */}
-          <div className="hidden sm:block">
-            <SimpleThemeToggle />
-          </div>
+          <SimpleThemeToggle />
 
           {/* User Avatar */}
           <Link href="/dashboard/profile">

@@ -12,7 +12,6 @@ function CallbackContent() {
   const searchParams = useSearchParams();
   const { login } = useAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingToken, setPendingToken] = useState<string | null>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -32,7 +31,6 @@ function CallbackContent() {
         if (token) {
           // Store token temporarily if user needs to set password
           if (needsPasswordChange) {
-            setPendingToken(token);
             login(token, true); // Login first so API calls work
             setShowPasswordModal(true);
             toast.info("Please set a password for your account", { duration: 5000 });

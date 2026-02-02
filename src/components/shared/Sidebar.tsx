@@ -13,14 +13,14 @@ import {
   LogOut, 
   BookMarked,
   Home,
-  Library,
   GraduationCap,
   Crown,
   Sparkles,
   ChevronRight,
   User,
   RefreshCw,
-  Menu
+  Menu,
+  BookOpen
 } from "lucide-react";
 import { LiquidButton } from "@/components/ui/liquid-button";
 import { SimpleThemeToggle } from "@/components/theme-toggle";
@@ -35,7 +35,7 @@ const Sidebar = () => {
   const navigation = [
     { name: "Home", href: "/", icon: Home, badge: null },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, badge: null },
-    { name: "Library", href: "/lessons", icon: Library, badge: null },
+    { name: "Stories", href: "/lessons", icon: BookOpen, badge: null },
     { name: "Grammar", href: "/grammar", icon: GraduationCap, badge: null },
     { name: "My Vocabulary", href: "/myVocabulary", icon: BookMarked, badge: null },
     { name: "Profile", href: "/dashboard/profile", icon: User, badge: null },
@@ -58,7 +58,10 @@ const Sidebar = () => {
             priority
           />
         </Link>
-        {!isMobile && <SimpleThemeToggle />}
+        {/* Theme toggle - positioned with margin-right on mobile to avoid close button overlap */}
+        <div className={isMobile ? "mr-10" : ""}>
+          <SimpleThemeToggle />
+        </div>
       </div>
 
       {/* 2. Premium Status Banner */}

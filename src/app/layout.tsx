@@ -21,10 +21,10 @@ const notoSerif = Noto_Serif({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.klartext.tech'),
   title: {
-    default: "KlarText - Learn German Through Reading | German Language Learning Platform",
+    default: "KlarText - Learn German Through Reading",
     template: "%s | KlarText"
   },
-  description: "Master German through comprehensible input with KlarText. Interactive German lessons, vocabulary building, live voice rooms, and personalized learning. Perfect for A1-C1 learners. Start learning German today!",
+  description: "Master German with KlarText. Interactive lessons, vocabulary building, and live practice. Perfect for A1-C1 learners. Start free today!",
   keywords: [
     "KlarText",
     "klartext",
@@ -72,8 +72,8 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://www.klartext.tech",
     siteName: "KlarText",
-    title: "KlarText - Learn German Through Reading | German Language Learning Platform",
-    description: "Master German through comprehensible input with KlarText. Interactive German lessons, vocabulary building, live voice rooms, and personalized learning. Perfect for A1-C1 learners.",
+    title: "KlarText - Learn German Through Reading",
+    description: "Master German with KlarText. Interactive lessons, vocabulary building, and live practice. Perfect for A1-C1 learners.",
     images: [
       {
         url: "/logo/logo final 1.png",

@@ -374,6 +374,31 @@ function LoginForm() {
                 </motion.div>
               </form>
 
+              {/* Demo Credentials Box */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 }}
+                className="mt-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
+                    <span className="text-xs">🔑</span>
+                  </div>
+                  <span className="text-amber-400 font-semibold text-sm">Demo Admin Access</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50">Email:</span>
+                    <code className="px-2 py-0.5 rounded bg-white/10 text-amber-300 font-mono">ashfaquesami6@gmail.com</code>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/50">Password:</span>
+                    <code className="px-2 py-0.5 rounded bg-white/10 text-amber-300 font-mono">admin123</code>
+                  </div>
+                </div>
+              </motion.div>
+
               {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">

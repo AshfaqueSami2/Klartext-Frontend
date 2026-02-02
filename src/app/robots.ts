@@ -14,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/api/', '/dashboard/'],
       },
     ],
-    sitemap: 'https://klartext.com/sitemap.xml',
+    sitemap: 'https://www.klartext.tech/sitemap.xml',
   };
 }

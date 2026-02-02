@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
@@ -203,10 +204,19 @@ const StepCard = ({
 );
 
 export default function Home() {
+  const router = useRouter();
   const { user, isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Redirect to register if not logged in when clicking lessons
+  const handleLessonsClick = (e: React.MouseEvent) => {
+    if (!user && !isLoading) {
+      e.preventDefault();
+      router.push("/register");
+    }
+  };
   
   const { scrollYProgress } = useScroll();
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
@@ -262,7 +272,7 @@ export default function Home() {
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/lessons" className="text-gray-300 hover:text-white transition-colors">
+            <Link href="/lessons" onClick={handleLessonsClick} className="text-gray-300 hover:text-white transition-colors">
               Lessons
             </Link>
             <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
@@ -320,7 +330,7 @@ export default function Home() {
               className="md:hidden bg-slate-950/95 backdrop-blur-xl border-t border-white/10"
             >
               <div className="p-4 space-y-4">
-                <Link href="/lessons" className="block text-gray-300 hover:text-white py-2">
+                <Link href="/lessons" onClick={handleLessonsClick} className="block text-gray-300 hover:text-white py-2">
                   Lessons
                 </Link>
                 <Link href="/pricing" className="block text-gray-300 hover:text-white py-2">
@@ -399,7 +409,7 @@ export default function Home() {
                 animation: "gradient 3s ease infinite",
               }}
             >
-              AI-Powered Stories
+              KlarText
             </motion.span>
           </h1>
 
@@ -438,7 +448,7 @@ export default function Home() {
               </motion.div>
             </Link>
             
-            <Link href="/lessons">
+            <Link href="/lessons" onClick={handleLessonsClick}>
               <motion.div whileHover={{ scale: 1.05, y: -4 }} whileTap={{ scale: 0.98 }}>
                 <LiquidButton 
                   variant="outline" 
