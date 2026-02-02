@@ -141,6 +141,15 @@ export default function PricingPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-16">
+      {/* Breadcrumb for SEO */}
+      <nav className="mb-6 text-sm" aria-label="Breadcrumb">
+        <ol className="flex items-center gap-2 text-muted-foreground">
+          <li><a href="/" className="hover:text-foreground transition-colors">Home</a></li>
+          <li>/</li>
+          <li className="text-foreground font-medium">Pricing</li>
+        </ol>
+      </nav>
+
       {/* Header */}
       <div className="text-center mb-8 sm:mb-12">
         <div className="flex justify-center mb-4 sm:mb-6 animate-in fade-in zoom-in-95 duration-500">
@@ -253,10 +262,16 @@ export default function PricingPage() {
             <CardTitle className="text-lg sm:text-xl">🎉 Free Access Available</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-sm sm:text-base">
+            <p className="text-muted-foreground text-sm sm:text-base mb-4">
               Start learning German today with our free {pricingData.freeLevels.join(' and ')} lessons. 
               No credit card required. Upgrade anytime to access advanced content.
             </p>
+            <a 
+              href="/lessons" 
+              className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
+            >
+              Explore Free Lessons →
+            </a>
           </CardContent>
         </Card>
       </div>

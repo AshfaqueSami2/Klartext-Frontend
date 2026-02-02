@@ -697,17 +697,65 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 py-8 sm:py-12 text-center border-t border-white/10 backdrop-blur-xl bg-white/5">
+      <footer className="relative z-10 py-8 sm:py-12 border-t border-white/10 backdrop-blur-xl bg-white/5">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src="/logo/logo final 1.png"
-              alt="KlarText Logo"
-              className="h-16 sm:h-20 w-auto object-contain"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div className="md:col-span-2">
+              <img
+                src="/logo/logo final 1.png"
+                alt="KlarText Logo"
+                className="h-16 sm:h-20 w-auto object-contain mb-4"
+              />
+              <p className="text-gray-400 text-sm max-w-md">
+                Master German through immersive storytelling. Join 10,000+ learners worldwide.
+              </p>
+            </div>
+            
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/lessons" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    German Lessons
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Pricing Plans
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Get Started Free
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Sign In
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Learning Levels */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Learning Levels</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>A1 - Beginner German</li>
+                <li>A2 - Elementary German</li>
+                <li>B1 - Intermediate German</li>
+                <li>B2 - Upper Intermediate</li>
+                <li>C1 - Advanced German</li>
+              </ul>
+            </div>
           </div>
-          <p className="text-gray-400 mb-2">© 2024 KlarText. All rights reserved.</p>
-          <p className="text-gray-500 text-sm">Made with ❤️ for German Learners Worldwide</p>
+          
+          <div className="text-center pt-8 border-t border-white/10">
+            <p className="text-gray-400 mb-2">© 2024 KlarText. All rights reserved.</p>
+            <p className="text-gray-500 text-sm">Made with ❤️ for German Learners Worldwide</p>
+          </div>
         </div>
       </footer>
     </div>
